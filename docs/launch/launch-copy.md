@@ -6,18 +6,9 @@ Ko-fi: https://ko-fi.com/designmasterdm
 
 ## Hacker News
 
-Title: Show HN: Design Master, a local workbench for AI UI mockups and handoffs
-URL: https://github.com/jumpino27/design-master
+The owner must publish this personally. [HN's guidelines](https://news.ycombinator.com/newsguidelines.html) prohibit generated text and automated posting. No post or HN account has been created by this agent.
 
-First comment:
-
-I built Design Master to keep a project's brand rules, UI references, generated images, and implementation notes in one local workspace.
-
-It runs as a Tauri desktop app with a Rust/SQLite backend and a Next.js interface. You can generate UI mockups, work on game HUDs, extract reusable image assets, and export DESIGN.md plus a handoff prompt for a coding agent. It includes two showcase projects so you can inspect the workflow before adding a provider key.
-
-The source is MIT licensed. Generation uses your own OpenRouter key and incurs provider charges. The app produces references and implementation instructions; it does not generate a finished production application. Image quality and asset extraction still need human review.
-
-I'd welcome feedback on the handoff format and the boundaries between reusable assets and UI elements that should be built in code.
+Use [the submission page](https://news.ycombinator.com/submit) and write an original title and explanation. The title should begin with `Show HN`. Link directly to the repository. Useful facts to cover in your own words are the local Tauri/Rust architecture, BYOK generation costs, brand rules and handoff exports, and the two runnable showcase examples.
 
 ## Product Hunt
 
@@ -27,20 +18,28 @@ Website: https://github.com/jumpino27/design-master
 
 Description:
 
-Design Master is an open-source desktop workbench for turning brand rules and reference images into UI mockups, reusable assets, and coding-agent handoffs. Organize work locally, explore coordinated pages or game HUDs, and export DESIGN.md with implementation notes. Bring your own OpenRouter key. Provider charges apply.
+An open-source desktop workbench for turning brand rules and reference images into UI mockups, reusable assets, and coding-agent handoffs. Keep projects locally, explore app screens or game HUDs, and export DESIGN.md with implementation notes. Bring your own OpenRouter key; provider charges apply.
 
 Maker comment:
 
-I wanted a place to keep the whole design-to-implementation brief together: brand tokens, reference images, generated screens, extracted assets, and the instructions a coding agent needs. Design Master stores that work locally and wraps it in a native Tauri app. The source is MIT licensed, and the built-in showcases let you inspect the workflow before making paid generation calls.
+I built Design Master to keep the design-to-implementation brief together: brand tokens, reference images, generated screens, extracted assets, and the instructions a coding agent needs. It stores projects locally and runs in a native Tauri app. The source is MIT licensed, and two built-in showcases let you inspect the workflow before making paid generation calls. I would welcome feedback on the handoff format and the boundary between reusable assets and UI elements that should be built in code.
+
+Scheduled for 25 October 2026 at 08:01 Europe/Rome.
 
 ## Ko-fi welcome post
 
-Title: Support Design Master
+Published: https://ko-fi.com/post/Design-Master-1-0-0-is-available-E5P329DVAE
 
-Design Master is an open-source desktop workbench for UI mockups, game HUDs, reusable assets, and coding-agent handoffs.
+Title: Design Master 1.0.0 is available
+
+Design Master 1.0.0 is available for macOS, Windows, and Linux. It is an open-source desktop workbench for UI mockups, game HUDs, reusable assets, and coding-agent handoffs.
 
 Contributions support maintenance, native installer testing, and improvements to exports and updates. The application stays free under the MIT license. AI generation uses your own OpenRouter key and provider charges apply.
 
-Source and downloads: https://github.com/jumpino27/design-master
+Download Design Master: https://github.com/jumpino27/design-master/releases/latest
+
+Source: https://github.com/jumpino27/design-master
 
 Feedback and bug reports are welcome on GitHub.
+
+Ko-fi payments are awaiting Stripe verification. You can support development now through GitHub Sponsors: https://github.com/sponsors/jumpino27.

@@ -117,7 +117,6 @@ struct SeedOutputDef<'a> {
     aspect_ratio: &'a str,
     transparent_background: bool,
     extracted_from: Option<&'a str>,
-    seed_rel_path: &'a str,
     embedded_bytes: &'static [u8],
     prompt_used: &'a str,
 }
@@ -139,12 +138,6 @@ pub async fn ensure_seed_example_projects(
         },
     };
     use std::collections::HashMap;
-
-    let manifest_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
-    let workspace_root = manifest_dir
-        .parent()
-        .and_then(|p| p.parent())
-        .unwrap_or(manifest_dir);
 
     // ------------------------------------------------------------------------
     // Example 1: Aetheris Chronicles — RPG Game UI & HUD
@@ -510,7 +503,6 @@ pub async fn ensure_seed_example_projects(
                 aspect_ratio: "16:9",
                 transparent_background: false,
                 extracted_from: None,
-                seed_rel_path: "assets/seed_examples/aetheris/01_hud_inventory.png",
                 embedded_bytes: include_bytes!("../../../assets/seed_examples/aetheris/01_hud_inventory.png"),
                 prompt_used: user_prompt,
             },
@@ -523,7 +515,6 @@ pub async fn ensure_seed_example_projects(
                 aspect_ratio: "1:1",
                 transparent_background: true,
                 extracted_from: Some("example-out-aetheris-1"),
-                seed_rel_path: "assets/seed_examples/aetheris/02_guild_crest_transparent.png",
                 embedded_bytes: include_bytes!("../../../assets/seed_examples/aetheris/02_guild_crest_transparent.png"),
                 prompt_used: "Isolated standalone transparent-background PNG of the ornate dark-fantasy Aetheris Guild Crest & Level Emblem with faceted gold wings, obsidian shield, and glowing violet crystal core.",
             },
@@ -536,15 +527,13 @@ pub async fn ensure_seed_example_projects(
                 aspect_ratio: "1:1",
                 transparent_background: true,
                 extracted_from: Some("example-out-aetheris-1"),
-                seed_rel_path: "assets/seed_examples/aetheris/03_hud_icons_transparent.png",
                 embedded_bytes: include_bytes!("../../../assets/seed_examples/aetheris/03_hud_icons_transparent.png"),
                 prompt_used: "Isolated 3x3 RPG HUD & Inventory Icon Sheet on a 100% transparent background: arcane greatsword, gilded shield, crimson health elixir, azure mana crystal, ancient spell tome, dragon crest ring, rune stone, lockpick key, and gold coin stack.",
             },
         ];
 
         for (idx, def) in aetheris_outputs.iter().enumerate() {
-            let seed_abs = workspace_root.join(def.seed_rel_path);
-            let bytes = std::fs::read(&seed_abs).unwrap_or_else(|_| def.embedded_bytes.to_vec());
+            let bytes = def.embedded_bytes.to_vec();
             if !bytes.is_empty() {
                 if let Ok(processed) = validate_and_thumbnail_output_bytes(bytes.clone()).await {
                     let orig_rel = format!(
@@ -1001,7 +990,6 @@ pub async fn ensure_seed_example_projects(
                 aspect_ratio: "2:3",
                 transparent_background: false,
                 extracted_from: None,
-                seed_rel_path: "assets/seed_examples/jumpino_view/01_landing_page.png",
                 embedded_bytes: include_bytes!("../../../assets/seed_examples/jumpino_view/01_landing_page.png"),
                 prompt_used: user_prompt,
             },
@@ -1014,7 +1002,6 @@ pub async fn ensure_seed_example_projects(
                 aspect_ratio: "1:1",
                 transparent_background: true,
                 extracted_from: Some("example-out-jumpino-1"),
-                seed_rel_path: "assets/seed_examples/jumpino_view/02_brand_logo_transparent.png",
                 embedded_bytes: include_bytes!("../../../assets/seed_examples/jumpino_view/02_brand_logo_transparent.png"),
                 prompt_used: "Isolated standalone transparent-background PNG of the Jumpino View brand logo emblem and crisp geometric wordmark in warm terracotta and indigo.",
             },
@@ -1027,7 +1014,6 @@ pub async fn ensure_seed_example_projects(
                 aspect_ratio: "1:1",
                 transparent_background: true,
                 extracted_from: Some("example-out-jumpino-1"),
-                seed_rel_path: "assets/seed_examples/jumpino_view/03_3d_clay_plant_transparent.png",
                 embedded_bytes: include_bytes!("../../../assets/seed_examples/jumpino_view/03_3d_clay_plant_transparent.png"),
                 prompt_used: "Isolated standalone transparent-background PNG of the tactile matte 3D clay potted monstera plant in a ribbed ceramic pot with a floating warm terracotta spark tile.",
             },
@@ -1040,15 +1026,13 @@ pub async fn ensure_seed_example_projects(
                 aspect_ratio: "1:1",
                 transparent_background: true,
                 extracted_from: Some("example-out-jumpino-1"),
-                seed_rel_path: "assets/seed_examples/jumpino_view/04_icon_sheet_transparent.png",
                 embedded_bytes: include_bytes!("../../../assets/seed_examples/jumpino_view/04_icon_sheet_transparent.png"),
                 prompt_used: "Isolated 2x3 tactile 3D clay icon sheet on a 100% transparent background: discovery compass, creator spark wand, interactive layers cube, community heart badge, analytics growth prism, and verified shield.",
             },
         ];
 
         for (idx, def) in jumpino_outputs.iter().enumerate() {
-            let seed_abs = workspace_root.join(def.seed_rel_path);
-            let bytes = std::fs::read(&seed_abs).unwrap_or_else(|_| def.embedded_bytes.to_vec());
+            let bytes = def.embedded_bytes.to_vec();
             if !bytes.is_empty() {
                 if let Ok(processed) = validate_and_thumbnail_output_bytes(bytes.clone()).await {
                     let orig_rel = format!(

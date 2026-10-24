@@ -1,0 +1,74 @@
+Implement the design described below in the target project's existing codebase.
+{{handoff_mission_header}}
+
+FIRST STEP — INSPECT REFERENCE IMAGE ON DISK:
+Open and inspect this reference image at full resolution using your file-reading or vision tool before writing any code:
+PRIMARY IMAGE PATH: {{primary_image_path}}
+
+PROJECT & PRODUCT ARCHETYPE (WHAT WE ARE BUILDING)
+Project Name: {{project_name}}
+Product / Application Description: {{project_description}}
+Project Purpose: {{project_purpose}}
+Industry: {{project_industry}}
+Audience & Needs: {{target_audience}}
+Primary Conversion / User Action: {{desired_user_action}}
+Requested scope: {{scope}}
+Target stack and repository context: {{target_stack_and_repository_or_inspect_existing_project}}
+
+CHOSEN DESIGN STYLE & VISUAL SYSTEM RULES
+{{chosen_design_style_block}}
+
+ANTI-AI-SLOP FRONTEND & DESIGN CRAFTSMANSHIP MANDATE (PBAKAUS/IMPECCABLE & NEXU-IO/OPEN-DESIGN STANDARD)
+- Pass the Squint Test & Spatial Hierarchy: Maintain one unmistakable primary focal point, a clear secondary action, and structured reading rhythm using generous whitespace and proximity rather than wrapping every element in nested cards ("Cardocalypse").
+- Tinted Neutrals & Explicit Component Color Roles (DESIGN.md): Never use pure dead black (#000000) with untinted mid-gray (#808080) or generic purple-to-blue AI gradients. Strictly apply the project's DESIGN.md semantic tokens for Navbar (surface, backdrop blur, 1px hairline border, active/inactive link states, primary CTA), Buttons (Primary fill/text/hover, Secondary surface/border/hover, Ghost, Destructive), Cards/Surfaces, Inputs, and Badges.
+- High-Contrast Typography Craft (/typeset): Pair the heading font ({{brand_tokens_and_typography}}) with tight optical tracking (-0.025em to -0.04em) and crisp line-height (1.08–1.18) alongside a highly legible body font (1.55–1.65 line-height, 60ch–70ch max measure) and tabular numerals for all numbers and metrics. Never place low-contrast gray text on colored or translucent surfaces, and never center-align multi-line body prose.
+- Authentic Domain Copy & Physical Motion: Never invent generic AI marketing clichés ("Revolutionize your workflow", "Unleash AI") or mismatched sections (never add SaaS pricing to open-source projects). Use crisp physical spring transitions (stiffness 320, damping 28) or exponential ease-out curves—never dated bounce or elastic animations.
+
+DESIGN REFERENCES
+{{ordered_reference_list_with_exact_absolute_paths_roles_and_dimensions}}
+
+EXISTING UI REPLACEMENT, PRODUCT ARCHETYPE & COMPONENT ARCHITECTURE SPEC
+{{component_architecture_and_integration_spec}}
+
+PLACEHOLDER CONTENT (FUTURE REAL DATABASE OR GAME RUNTIME) & 1:1 COMPONENT IMPLEMENTATION MANDATE (CRUCIAL)
+{{placeholder_and_one_to_one_card_mandate}}
+
+CODE VS. 2D VECTOR ASSET VS. INTERACTIVE 3D OBJECT SPLIT (SEPARATORS, BACKGROUNDS & IMAGE-TO-3D WITH ROTATION/ANIMATION)
+{{chroma_and_asset_cropping_rules}}
+
+STICKY VS. NON-STICKY POSITIONING & SCROLL LAYERING SPEC
+{{sticky_and_positioning_rules}}
+
+INTERACTIVE STATES, HOVER / CLICK COLORS & VISUAL EFFECTS MATRIX
+{{hover_click_states_and_color_effects}}
+
+ANIMATIONS, FRAMER MOTION & 3D ROTATION / INTERACTIVE EFFECTS SPECIFICATION
+{{animations_and_motion_spec}}
+
+BRAND AND SOURCE ASSETS (DESIGN.MD SPECIFICATION)
+{{brand_tokens_and_typography}}
+{{original_logo_font_and_required_asset_paths}}
+{{asset_usage_rules}}
+
+REQUIREMENTS
+Original Request: {{original_user_request}}
+{{requirements_and_exact_copy}}
+{{interactions_states_and_responsive_rules}}
+
+IMPLEMENTATION INSTRUCTIONS (PURE HUMAN LANGUAGE SPECIFICATION)
+1. Inspect the existing repository and its conventions (and check the project's DESIGN.md specification if present). Open every relevant reference image at full resolution before building.
+2. If an existing UI reference image (such as a current hero, header, navigation bar, or component screenshot) is listed above, locate that old hero, header, or component in the codebase and replace it completely with the newly generated design while preserving all existing routes, click actions, state bindings, and backend connections.
+3. Reproduce the exact layout, visual hierarchy, typography, color palette, spacing, borders, corner radii, and shadows shown in the new reference image—strictly honoring the Chosen Design Style, the Anti-AI-Slop Mandate (pbakaus/impeccable), and the saved Brand Kit / DESIGN.md tokens as the source of truth.
+4. Respect the Product Archetype and Placeholder Mandate above:
+   - For Web Landing Pages and Multi-Page Webapps: Any sample user profiles, creator cards, avatar stacks, directory listings, ad banners, or live metrics in the reference image are placeholder sample data that will be connected to a real database later. Right now, build every single UI card, profile card mockup, directory card, and banner 1:1 in code matching the exact layout, dimensions, badges, buttons, and sample text in the image, backed by clean structured mock data ready for future database wiring.
+   - For Game UI, HUDs, and Game Interface Components: Do not invent static in-game characters or background game worlds as hardcoded screenshots. Any background gameplay viewport, character model stage, portrait slot, or sample inventory item inside a slot is a placeholder viewport where the game engine or runtime state renders live content. Implement ONLY the UI interface components, HUD frames, ornate borders, health/mana/progress bars, panels, slots, and buttons 1:1 via image-to-code.
+5. Follow the Code vs. 2D Vector Asset vs. Interactive 3D Object Split above:
+   - Build all section separators, glowing dividers, ambient background gradients, radial glows, grid or particle backdrops, frosted glass surfaces, and UI card/HUD frames purely with code rather than static images.
+   - Convert brand logos, wordmarks, UI icons (from the Icon Sheet), crests, badges, and flat geometric graphics into crisp, scalable vectorial SVG graphics for infinite sharpness and instant loading speed.
+   - Whenever the design includes a 3D object, 3D artifact, 3D emblem, 3D crystal/coin, 3D plant/prop, or 3D centerpiece (provided as an isolated transparent reference image), construct or generate an interactive 3D object from that reference image rather than pasting a flat static 2D image, and animate it with smooth continuous rotation, gentle floating idle motion, and interactive pointer-tracking 3D tilt and hover effects.
+6. Enforce the Sticky vs. Non-Sticky Positioning rules above so only designated persistent chrome (such as top navigation headers, sticky sidebars, or HUD overlays) remains anchored while content sections, cards, and footers scroll naturally in normal flow.
+7. Implement all interactive states (resting, hover, pressed/click, keyboard focus, selected, and disabled) and smooth animations—including Framer Motion spring hover and press feedback, staggered scroll-in reveals, smooth layout reflows when filtering or switching tabs, shared active navigation indicators across routes, 3D object rotation, and reduced-motion accessibility support.
+{{extraction_steps}}
+8. Run the application, verify the visual output across desktop, tablet, and mobile viewports against the reference images, and confirm all interactive states, animations, and replacements work seamlessly.
+
+The filesystem paths refer to the Design Master host. Verify access to them first. If your execution environment cannot read these paths, request the portable export bundle instead of inventing replacements.

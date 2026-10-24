@@ -1,0 +1,29 @@
+# Rust / Tauri
+/target/
+/src-tauri/gen/
+/dist/
+**/*.rs.bk
+
+# Node / Next.js
+node_modules/
+/web/node_modules/
+/web/.next/
+/web/out/
+/playwright-report/
+/test-results/
+
+# Local data and secrets
+.env*
+!.env.example
+data/
+/tmp-test-data/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TypeScript incremental build cache
+*.tsbuildinfo

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0D0F18" />
+      <stop offset="100%" stop-color="#07080D" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7C3AED" />
+      <stop offset="55%" stop-color="#4F46E5" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6" stop-opacity="0.75" />
+      <stop offset="100%" stop-color="#06B6D4" stop-opacity="0.55" />
+    </linearGradient>
+  </defs>
+  <!-- Outer deep obsidian squircle -->
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#bgGrad)" stroke="url(#borderGrad)" stroke-width="8" />
+  <!-- Inner electric violet-cyan architectural tile -->
+  <rect x="64" y="64" width="384" height="384" rx="84" fill="url(#accentGrad)" opacity="0.16" stroke="url(#borderGrad)" stroke-width="3" />
+  <!-- Bold geometric 'D' monogram (left) -->
+  <path d="M98 164 H168 C218 164 252 198 252 256 C252 314 218 348 168 348 H98 Z M142 204 V308 H165 C192 308 208 289 208 256 C208 223 192 204 165 204 Z" fill="url(#accentGrad)" />
+  <!-- Bold geometric 'M' monogram (right) -->
+  <path d="M268 348 V164 H308 L346 238 L384 164 H424 V348 H384 V236 L346 308 L308 236 V348 Z" fill="#F8FAFC" />
+  <!-- Luminous cyan-gold precision spark node -->
+  <circle cx="412" cy="116" r="14" fill="#22D3EE" />
+</svg>

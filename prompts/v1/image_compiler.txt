@@ -1,0 +1,48 @@
+DESIGN MASTER IMAGE PROMPT COMPILER (v1 — IMPECCABLE ANTI-AI-SLOP EDITION)
+==========================================================================
+OUTPUT SCOPE & CROP:
+- Mode: {{mode}} ({{item_kind}})
+- Direction / Item Title: {{item_name}} (Variant #{{variant_index}})
+- Viewport & Aspect Ratio: {{viewport_intent}} ({{css_width}}px target width), Aspect Ratio {{aspect_ratio}}
+- Scope Rules: {{scope_constraints}}
+
+WHAT WE ARE BUILDING INSIDE THIS PROJECT:
+- Project: {{project_name}} — {{project_purpose}}
+- Product / Application Description: {{project_description}}
+- Industry & Target Audience: {{project_industry}} | Audience: {{target_audience}} ({{audience_needs}})
+- Primary User Goal / Conversion Action: {{desired_user_action}}
+
+CHOSEN WEB DESIGN STYLE (MANDATORY AESTHETIC & SYSTEM RULES):
+{{chosen_design_style_block}}
+
+BRAND KIT & DESIGN.MD TOKENS:
+- Brand Personality & Direction: {{brand_direction}}
+- UI Density & Tone: {{ui_density}} / {{tone_of_voice}} ({{content_language}})
+- Color Palette: Primary {{color_primary}}, Accent {{color_accent}}, Background {{color_background}}, Surface {{color_surface}}, Text {{color_text}}, Muted {{color_muted}}, Border {{color_border}}
+- Typography Intent: Heading {{heading_font}}, Body {{body_font}}, Mono {{mono_font}}
+- Radii, Borders & Shadows: Radius {{border_radius}}, Border {{border_style}}, Shadow {{shadow_style}}
+- Logo Instruction: {{logo_instruction}}
+
+ANTI-AI-SLOP VISUAL CRAFTSMANSHIP RULES (IMPECCABLE STANDARD — STRICTLY ENFORCED):
+- PASS THE SQUINT TEST: Establish one unmistakable #1 primary focal point (e.g., an authentic interactive product/canvas showcase, architectural diagram, or bold editorial typographic anchor), a clear #2 secondary action, and generous negative space.
+- BAN CARD-IN-CARD HELL ("CARDOCALYPSE"): Do NOT wrap every section in a boxed card containing nested sub-cards with heavy borders. Use proximity, intentional whitespace, crisp 1px architectural hairlines ({{color_border}}), and subtle surface luminance shifts ({{color_background}} vs {{color_surface}}). Avoid repetitive 3-column "icon-in-a-circle" boilerplate grids; prefer asymmetric bento grids, split editorial layouts, or live product previews.
+- BAN CLICHÉ AI SLOP GRADIENTS & NEON BLOB SOUP: Do NOT render generic purple-to-blue SaaS gradients, random floating glowing spheres/blobs, meaningless sci-fi HUD rings on non-gaming apps, or cheap rainbow borders. Strictly use the Brand Kit palette above with tinted neutrals and purposeful accents.
+- HIGH-CONTRAST TYPOGRAPHY & ZERO AI FILLER COPY: Render razor-sharp, high-contrast text ({{color_text}} on {{color_background}}/{{color_surface}} — never unreadable faint gray text on colored or translucent backgrounds). Left-align body copy and data metrics; use tabular numerals for numbers. Never render generic AI filler phrases ("Revolutionize your workflow", "Lorem ipsum", or fake SaaS pricing on open-source tools).
+
+CREATIVE ART DIRECTION FOR THIS OUTPUT:
+{{direction_summary}}
+
+PLANNER IMAGE PROMPT:
+{{planner_image_prompt}}
+
+SCREENSHOT IMPROVEMENTS & REQUIRED CONTROLS:
+{{requirements_covered}}
+
+EXACT COPY & HIERARCHY:
+{{exact_copy}}
+
+ATTACHED REFERENCE ROLES:
+{{reference_roles_summary}}
+
+INVARIANT RENDERING CONSTRAINTS:
+{{invariant_constraints}}

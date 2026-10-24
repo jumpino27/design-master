@@ -49,6 +49,7 @@ pub struct AppState {
     pub config: AppConfig,
     pub provider: Arc<OpenRouterClient>,
     pub event_tx: broadcast::Sender<RunEventMessage>,
+    pub restart: crate::updater::AppRestart,
 }
 
 pub fn build_router(state: AppState) -> Router {
@@ -225,6 +226,8 @@ async fn health_handler() -> Json<serde_json::Value> {
     Json(serde_json::json!({
         "status": "ok",
         "service": "design-gen-server",
+        "version": crate::updater::APP_VERSION,
+        "process_id": std::process::id(),
         "timestamp": chrono::Utc::now().to_rfc3339()
     }))
 }
@@ -4659,12 +4662,15 @@ async fn system_update_config_handler(
 async fn system_update_install_handler(
     State(state): State<AppState>,
 ) -> AppResult<Json<crate::updater::UpdateInstallReport>> {
-    let report = crate::updater::install_latest_update(&state.pool, &state.config).await?;
+    let report =
+        crate::updater::install_latest_update(&state.pool, &state.config, &state.restart).await?;
     Ok(Json(report))
 }
 
-async fn system_update_restart_handler() -> AppResult<Json<serde_json::Value>> {
-    crate::updater::trigger_app_restart();
+async fn system_update_restart_handler(
+    State(state): State<AppState>,
+) -> AppResult<Json<serde_json::Value>> {
+    state.restart.schedule()?;
     Ok(Json(serde_json::json!({
         "ok": true,
         "message": "Restarting Design Master..."

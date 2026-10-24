@@ -58,6 +58,7 @@ async fn main() -> anyhow::Result<()> {
         config: config.clone(),
         provider,
         event_tx,
+        restart: Default::default(),
     };
 
     let app = build_router(state);

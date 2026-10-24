@@ -17,12 +17,13 @@ use std::{net::SocketAddr, path::PathBuf, sync::Arc};
 use tokio::{net::TcpListener, sync::broadcast};
 
 /// Starts the Design Master (`design-gen-server`) backend in-process on a local loopback port
-/// (defaulting to `127.0.0.1:4318`, or reusing `127.0.0.1:4318` if already running, or binding
-/// an OS-assigned loopback port `127.0.0.1:0` if 4318 is occupied by another service).
+/// (defaulting to `127.0.0.1:4318`, or binding an OS-assigned loopback port if it is occupied).
+/// Each desktop owns its backend so it cannot attach to an older app during an update.
 pub async fn start_embedded_server(
     custom_static_dir: Option<PathBuf>,
     custom_data_dir: Option<PathBuf>,
-) -> anyhow::Result<(SocketAddr, Option<broadcast::Sender<()>>)> {
+    restart: updater::AppRestart,
+) -> anyhow::Result<(SocketAddr, broadcast::Sender<()>)> {
     let mut config = config::AppConfig::from_env()?;
     if let Some(sd) = custom_static_dir {
         if sd.join("index.html").is_file() {
@@ -36,28 +37,7 @@ pub async fn start_embedded_server(
 
     let listener = match TcpListener::bind(&config.bind_addr).await {
         Ok(l) => l,
-        Err(_) => {
-            // Check if a Design Master server is already running and healthy on `config.bind_addr`
-            let health_url = format!("http://{}/api/health", config.bind_addr);
-            if let Ok(resp) = reqwest::Client::new()
-                .get(&health_url)
-                .timeout(std::time::Duration::from_millis(800))
-                .send()
-                .await
-            {
-                if resp.status().is_success() {
-                    if let Ok(addr) = config.bind_addr.parse::<SocketAddr>() {
-                        tracing::info!(
-                            "Reusing existing healthy Design Master backend at http://{}",
-                            addr
-                        );
-                        return Ok((addr, None));
-                    }
-                }
-            }
-            // Otherwise bind an OS-assigned free loopback port so the Tauri desktop app always starts
-            TcpListener::bind("127.0.0.1:0").await?
-        }
+        Err(_) => TcpListener::bind("127.0.0.1:0").await?,
     };
 
     let bound_addr = listener.local_addr()?;
@@ -94,12 +74,17 @@ pub async fn start_embedded_server(
     {
         let pool_bg = pool.clone();
         let cfg_bg = config.clone();
+        let restart_bg = restart.clone();
         tokio::spawn(async move {
             let upd_cfg = updater::load_update_config(&cfg_bg);
             if upd_cfg.auto_check_enabled {
                 let report = updater::check_for_updates(&cfg_bg).await;
                 if report.update_available && upd_cfg.auto_install_enabled {
-                    let _ = updater::install_latest_update(&pool_bg, &cfg_bg).await;
+                    if let Err(error) =
+                        updater::install_latest_update(&pool_bg, &cfg_bg, &restart_bg).await
+                    {
+                        tracing::error!(%error, "Automatic update failed");
+                    }
                 }
             }
         });
@@ -110,6 +95,7 @@ pub async fn start_embedded_server(
         config: config.clone(),
         provider,
         event_tx,
+        restart,
     };
 
     let app = routes::build_router(state);
@@ -125,5 +111,5 @@ pub async fn start_embedded_server(
         pool.close().await;
     });
 
-    Ok((bound_addr, Some(shutdown_tx)))
+    Ok((bound_addr, shutdown_tx))
 }

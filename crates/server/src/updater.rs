@@ -9,12 +9,55 @@ use sqlx::SqlitePool;
 use std::{
     path::{Path, PathBuf},
     process::Command,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
     time::Duration,
 };
 use uuid::Uuid;
 
 pub const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const DEFAULT_GITHUB_REPO: &str = "jumpino27/design-master";
+
+/// The desktop owns its windows and restart lifecycle. A browser-only server has no desktop
+/// to restart, so it must never launch an unrelated installed copy of the app.
+#[derive(Clone, Default)]
+pub struct AppRestart {
+    handler: Option<Arc<dyn Fn() + Send + Sync>>,
+    scheduled: Arc<AtomicBool>,
+}
+
+impl AppRestart {
+    pub fn new(handler: impl Fn() + Send + Sync + 'static) -> Self {
+        Self {
+            handler: Some(Arc::new(handler)),
+            scheduled: Arc::new(AtomicBool::new(false)),
+        }
+    }
+
+    pub fn is_supported(&self) -> bool {
+        self.handler.is_some()
+    }
+
+    pub fn schedule(&self) -> AppResult<()> {
+        let handler = self.handler.clone().ok_or_else(|| {
+            AppError::BadRequest(
+                "Restart this server from your terminal, or quit and reopen Design Master. Automatic restart is unavailable in this process."
+                    .into(),
+            )
+        })?;
+        if self.scheduled.swap(true, Ordering::SeqCst) {
+            return Ok(());
+        }
+        tokio::spawn(async move {
+            // Let the installation response reach the window before closing it.
+            tokio::time::sleep(Duration::from_secs(1)).await;
+            handler();
+        });
+        Ok(())
+    }
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AutoUpdateConfig {
@@ -68,6 +111,7 @@ pub struct UpdateInstallReport {
     pub backup_sqlite_path: String,
     pub updated_target_path: String,
     pub restart_required: bool,
+    pub restart_scheduled: bool,
     pub message: String,
 }
 
@@ -469,6 +513,7 @@ pub async fn check_for_updates(app_config: &AppConfig) -> UpdateCheckReport {
 pub async fn install_latest_update(
     pool: &SqlitePool,
     app_config: &AppConfig,
+    restart: &AppRestart,
 ) -> AppResult<UpdateInstallReport> {
     let check = check_for_updates(app_config).await;
     if !check.update_available {
@@ -544,24 +589,43 @@ pub async fn install_latest_update(
             apply_verified_platform_package(&stage_dir, &downloaded_file, asset_name)?;
         let _ = std::fs::remove_dir_all(&stage_dir);
 
-        return Ok(UpdateInstallReport {
-            ok: true,
-            previous_version,
-            installed_version: target_version.clone(),
-            backup_sqlite_path: backup_file.to_string_lossy().to_string(),
-            updated_target_path,
-            restart_required: std::env::consts::OS != "windows",
-            message: if std::env::consts::OS == "windows" {
-                "Update installer opened. Close Design Master if prompted, then finish the installation. SQLite backup saved.".into()
-            } else {
-                format!("Installed Design Master v{}. SQLite backup saved. Restart to use the new version.", target_version)
+        return finish_install(
+            UpdateInstallReport {
+                ok: true,
+                previous_version,
+                installed_version: target_version.clone(),
+                backup_sqlite_path: backup_file.to_string_lossy().to_string(),
+                updated_target_path,
+                restart_required: std::env::consts::OS != "windows",
+                restart_scheduled: false,
+                message: if std::env::consts::OS == "windows" {
+                    "Update installer opened. Close Design Master if prompted, then finish the installation. SQLite backup saved.".into()
+                } else {
+                    format!("Installed Design Master v{}. SQLite backup saved. Restart to use the new version.", target_version)
+                },
             },
-        });
+            restart,
+        );
     }
 
     Err(AppError::BadRequest(
         "This release has no compatible installer. No update was installed.".into(),
     ))
+}
+
+fn finish_install(
+    mut report: UpdateInstallReport,
+    restart: &AppRestart,
+) -> AppResult<UpdateInstallReport> {
+    if report.restart_required && restart.is_supported() {
+        restart.schedule()?;
+        report.restart_scheduled = true;
+        report.message = format!(
+            "Installed Design Master v{}. SQLite backup saved. Restarting automatically…",
+            report.installed_version
+        );
+    }
+    Ok(report)
 }
 
 fn apply_verified_platform_package(
@@ -731,34 +795,48 @@ fn replace_macos_bundle(source: &Path, target: &Path) -> AppResult<()> {
     Ok(())
 }
 
-pub fn trigger_app_restart() {
-    std::thread::spawn(|| {
-        std::thread::sleep(Duration::from_millis(500));
-        let os = std::env::consts::OS;
-        if os == "macos" {
-            let user_app = dirs::home_dir()
-                .unwrap_or_else(|| PathBuf::from("/"))
-                .join("Applications")
-                .join("Design Master.app");
-            if user_app.exists() {
-                let _ = Command::new("open")
-                    .args(["-n", &user_app.to_string_lossy()])
-                    .spawn();
-            } else {
-                let _ = Command::new("open")
-                    .args(["-n", "-a", "Design Master"])
-                    .spawn();
-            }
-        } else if let Ok(exe) = std::env::current_exe() {
-            let _ = Command::new(exe).spawn();
-        }
-        std::process::exit(0);
-    });
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn completed_install_schedules_one_restart_without_another_click() {
+        let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
+        let restart = AppRestart::new(move || {
+            tx.send(()).unwrap();
+        });
+        let report = finish_install(
+            UpdateInstallReport {
+                ok: true,
+                previous_version: "1.1.1".into(),
+                installed_version: "1.1.2".into(),
+                backup_sqlite_path: "/workspace/backups/pre-update.sqlite".into(),
+                updated_target_path: "/Applications/Design Master.app".into(),
+                restart_required: true,
+                restart_scheduled: false,
+                message: "Installed".into(),
+            },
+            &restart,
+        )
+        .unwrap();
+        assert!(report.restart_scheduled);
+        assert!(rx.try_recv().is_err(), "response must precede restart");
+        restart.clone().schedule().unwrap();
+        tokio::time::timeout(Duration::from_secs(3), rx.recv())
+            .await
+            .unwrap()
+            .unwrap();
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        assert!(
+            rx.try_recv().is_err(),
+            "duplicate requests must not restart twice"
+        );
+    }
+
+    #[tokio::test]
+    async fn browser_only_server_cannot_launch_another_desktop_app() {
+        assert!(AppRestart::default().schedule().is_err());
+    }
 
     fn asset(name: &str) -> GitHubAssetDto {
         GitHubAssetDto {

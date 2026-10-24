@@ -7,7 +7,7 @@ const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "design-master-ui-"));
 
 export default defineConfig({
   testDir: "./tests",
-  testMatch: ["ui-layout.spec.ts", "chat-flow.spec.ts"],
+  testMatch: ["ui-layout.spec.ts", "chat-flow.spec.ts", "updater.spec.ts"],
   workers: 1,
   timeout: 30_000,
   reporter: "list",

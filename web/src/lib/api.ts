@@ -662,6 +662,7 @@ export interface UpdateInstallReport {
   backup_sqlite_path: string;
   updated_target_path: string;
   restart_required: boolean;
+  restart_scheduled: boolean;
   message: string;
 }
 

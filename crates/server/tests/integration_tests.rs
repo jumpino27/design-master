@@ -66,6 +66,7 @@ async fn setup_test_state() -> (TempDir, AppState, broadcast::Sender<()>) {
         config,
         provider,
         event_tx,
+        restart: Default::default(),
     };
 
     (temp_dir, state, shutdown_tx)
@@ -101,6 +102,45 @@ async fn json_request(
         |_| serde_json::json!({ "raw": String::from_utf8_lossy(&collected).to_string() }),
     );
     (status, val)
+}
+
+#[tokio::test]
+async fn restart_endpoint_calls_its_desktop_owner_once() {
+    let (_temp, mut state, shutdown) = setup_test_state().await;
+    let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
+    state.restart = design_gen_server::updater::AppRestart::new(move || {
+        tx.send(()).unwrap();
+    });
+    let app = build_router(state);
+    for _ in 0..2 {
+        let (status, body) = json_request(&app, "POST", "/api/system/update/restart", None).await;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(body["ok"], true);
+    }
+    tokio::time::timeout(Duration::from_secs(3), rx.recv())
+        .await
+        .unwrap()
+        .unwrap();
+    tokio::time::sleep(Duration::from_millis(50)).await;
+    assert!(rx.try_recv().is_err());
+    let _ = shutdown.send(());
+}
+
+#[tokio::test]
+async fn browser_only_restart_returns_an_actionable_error() {
+    let (_temp, state, shutdown) = setup_test_state().await;
+    let (status, body) = json_request(
+        &build_router(state),
+        "POST",
+        "/api/system/update/restart",
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert!(body
+        .to_string()
+        .contains("Restart this server from your terminal"));
+    let _ = shutdown.send(());
 }
 
 #[tokio::test]

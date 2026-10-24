@@ -31,14 +31,18 @@ fn find_bundled_static_dir(resource_dir: Option<PathBuf>) -> Option<PathBuf> {
     None
 }
 
-async fn is_dev_frontend_alive(url: &str) -> bool {
+async fn dev_frontend_uses_this_backend() -> bool {
     if let Ok(resp) = reqwest::Client::new()
-        .get(url)
+        .get("http://localhost:3000/api/health")
         .timeout(std::time::Duration::from_millis(450))
         .send()
         .await
     {
-        return resp.status().is_success() || resp.status().is_redirection();
+        if resp.status().is_success() {
+            if let Ok(health) = resp.json::<serde_json::Value>().await {
+                return health["process_id"].as_u64() == Some(std::process::id() as u64);
+            }
+        }
     }
     false
 }
@@ -53,18 +57,35 @@ fn main() {
         .try_init();
 
     let app = tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _, _| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.unminimize();
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }))
         .setup(|app| {
             let resource_dir = app.path().resource_dir().ok();
             let static_dir = find_bundled_static_dir(resource_dir);
+            let app_handle = app.handle().clone();
+            let restart = match tauri::process::current_binary(&app.env()) {
+                Ok(_) => design_gen_server::updater::AppRestart::new(move || {
+                    app_handle.request_restart();
+                }),
+                Err(error) => {
+                    tracing::warn!(%error, "Automatic restart is unavailable for this launch path");
+                    design_gen_server::updater::AppRestart::default()
+                }
+            };
 
             let (bound_addr, shutdown_tx, use_dev_url) =
                 tauri::async_runtime::block_on(async move {
                     let (addr, tx) =
-                        design_gen_server::start_embedded_server(static_dir, None).await?;
+                        design_gen_server::start_embedded_server(static_dir, None, restart).await?;
                     let dev_alive = if cfg!(debug_assertions)
                         || std::env::var("DESIGN_MASTER_USE_DEV_SERVER").as_deref() == Ok("1")
                     {
-                        is_dev_frontend_alive("http://localhost:3000").await
+                        dev_frontend_uses_this_backend().await
                     } else {
                         false
                     };
@@ -72,7 +93,7 @@ fn main() {
                 })?;
 
             app.manage(EmbeddedServerHandle {
-                shutdown_tx: Mutex::new(shutdown_tx),
+                shutdown_tx: Mutex::new(Some(shutdown_tx)),
             });
 
             let target_url_str = if use_dev_url {

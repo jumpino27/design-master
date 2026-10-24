@@ -18,4 +18,6 @@ Verification passed:
 
 The running owner's app and creator projects were left intact. Windows and Linux installers require their native CI builds; this Mac test does not establish interactive update behavior on those systems.
 
+The [v1.1.2 release](https://github.com/jumpino27/design-master/releases/tag/v1.1.2) is public, and all three [native CI builds](https://github.com/jumpino27/design-master/actions/runs/40138955655) passed. All seven published installer digests match `SHA256SUMS.txt`. Both downloaded macOS files match their published hashes and sizes. The app archive contains version 1.1.2 and an ARM64 Mach-O executable, and the downloaded DMG passed `hdiutil verify`. A native launch through a symbolic link also confirmed that an unsupported restart returns an error while the app remains healthy.
+
 Upgrading from 1.1.1 or earlier still uses the old version's updater until it exits. One final manual quit may be needed for that transition. Automatic restart applies to installations performed by the corrected updater.

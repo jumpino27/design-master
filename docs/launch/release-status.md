@@ -1,8 +1,12 @@
 # Release and launch status
 
-Checked on 24 October 2026.
+Checked on 25 October 2026.
 
-[Design Master v1.1.1](https://github.com/jumpino27/design-master/releases/tag/v1.1.1) is public. The [tagged build](https://github.com/jumpino27/design-master/actions/runs/40131447731) passed on macOS ARM64, Windows x64, and Linux x64. All seven published installers were downloaded into `dist/verification/v1.1.1/` and matched the published file sizes and SHA-256 checksums.
+[Design Master v1.1.2](https://github.com/jumpino27/design-master/releases/tag/v1.1.2) is the latest public release. Its [tagged build](https://github.com/jumpino27/design-master/actions/runs/40138955655) passed on macOS ARM64, Windows x64, and Linux x64. All seven published installer digests match the release checksum manifest. The two macOS artifacts were also downloaded into `dist/verification/v1.1.2-ci/`, checked against their published sizes and checksums, and verified for bundle version and ARM64 architecture. The downloaded DMG passed `hdiutil verify`.
+
+Version 1.1.2 fixes automatic restart after an in-place update, prevents duplicate desktop instances, and gives each desktop its own backend. Native macOS tests confirmed that replacing a bundle and requesting restart closes the old process, opens one new window from the replaced bundle, and preserves the existing project. Local checks passed twelve Rust unit tests, eleven integration tests, and thirteen browser checks. See [update and restart verification](../update-restart-verification.md). The owner's running app and creator projects were preserved. An upgrade from an older updater may need one final manual quit before the corrected restart flow takes over.
+
+The earlier [Design Master v1.1.1](https://github.com/jumpino27/design-master/releases/tag/v1.1.1) introduced the visual refresh and four showcases. Its [tagged build](https://github.com/jumpino27/design-master/actions/runs/40131447731) passed on macOS ARM64, Windows x64, and Linux x64. All seven published installers were downloaded into `dist/verification/v1.1.1/` and matched the published file sizes and SHA-256 checksums.
 
 The downloaded macOS DMG passed `hdiutil verify`, and its app archive contains the native executable. The Windows portable ZIP passed its archive integrity check and contains the PE executable and static frontend. Native installer headers were checked for the Windows setup, Linux DEB, and Linux AppImage. Windows and Linux packages were built and checked on their native CI runners. They were not interactively installed on this Mac.
 

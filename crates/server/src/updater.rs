@@ -631,70 +631,19 @@ fn apply_verified_platform_package(
             )));
         }
 
-        // Determine target `.app` installation path
-        let user_app = dirs::home_dir()
-            .unwrap_or_else(|| PathBuf::from("/"))
-            .join("Applications")
-            .join("Design Master.app");
-        let sys_app = PathBuf::from("/Applications/Design Master.app");
-        let target_app = if sys_app.exists() { sys_app } else { user_app };
-
-        if let Some(parent) = target_app.parent() {
-            let _ = std::fs::create_dir_all(parent);
-        }
-        let backup_app = target_app.with_extension("app.bak");
-        let _ = std::fs::remove_dir_all(&backup_app);
-
-        if target_app.exists() {
-            let _ = Command::new("cp")
-                .args([
-                    "-R",
-                    &target_app.to_string_lossy(),
-                    &backup_app.to_string_lossy(),
-                ])
-                .status();
-        }
-
-        let _ = std::fs::remove_dir_all(&target_app);
-        let swap_ok = Command::new("cp")
-            .args([
-                "-R",
-                &extracted_app.to_string_lossy(),
-                &target_app.to_string_lossy(),
-            ])
-            .status()
-            .map(|s| s.success())
-            .unwrap_or(false)
-            && target_app.join("Contents/MacOS/design-master").is_file();
-
-        if !swap_ok {
-            // Automatic rollback from `.app.bak`!
-            let _ = std::fs::remove_dir_all(&target_app);
-            if backup_app.exists() {
-                let _ = Command::new("mv")
-                    .arg(&backup_app)
-                    .arg(&target_app)
-                    .status();
-            }
-            return Err(AppError::Internal(
-                "Failed swapping new app bundle; automatically rolled back to previous working version."
-                    .into(),
-            ));
-        }
-
-        let _ = Command::new("xattr")
-            .args(["-cr", &target_app.to_string_lossy()])
-            .status();
-        let _ = Command::new("codesign")
-            .args([
-                "--force",
-                "--deep",
-                "--sign",
-                "-",
-                &target_app.to_string_lossy(),
-            ])
-            .status();
-        let _ = std::fs::remove_dir_all(&backup_app);
+        let target_app = std::env::current_exe()
+            .ok()
+            .and_then(|exe| {
+                exe.ancestors()
+                    .find(|p| p.extension().and_then(|ext| ext.to_str()) == Some("app"))
+                    .map(Path::to_path_buf)
+            })
+            .unwrap_or_else(|| {
+                dirs::home_dir()
+                    .unwrap_or_else(|| PathBuf::from("."))
+                    .join("Applications/Design Master.app")
+            });
+        replace_macos_bundle(&extracted_app, &target_app)?;
 
         return Ok(target_app.to_string_lossy().to_string());
     }
@@ -732,6 +681,54 @@ fn apply_verified_platform_package(
         )));
     }
     Ok(target_bin.to_string_lossy().to_string())
+}
+
+fn replace_macos_bundle(source: &Path, target: &Path) -> AppResult<()> {
+    let parent = target
+        .parent()
+        .ok_or_else(|| AppError::Internal("App bundle has no parent directory.".into()))?;
+    std::fs::create_dir_all(parent)?;
+    let replacement = parent.join(format!("Design-Master-{}.app", Uuid::new_v4()));
+    let copy_status = Command::new("cp")
+        .arg("-R")
+        .arg(source)
+        .arg(&replacement)
+        .status()?;
+    if !copy_status.success() || !replacement.join("Contents/MacOS/design-master").is_file() {
+        let _ = std::fs::remove_dir_all(&replacement);
+        return Err(AppError::Internal(
+            "Could not stage the new app. Existing installation is unchanged.".into(),
+        ));
+    }
+    let signature = Command::new("codesign")
+        .args(["--verify", "--deep", "--strict"])
+        .arg(&replacement)
+        .status()?;
+    if !signature.success() {
+        let _ = std::fs::remove_dir_all(&replacement);
+        return Err(AppError::Internal(
+            "Downloaded app signature is invalid. Existing installation is unchanged.".into(),
+        ));
+    }
+    let backup = parent.join(format!("Design-Master-{}.app.bak", Uuid::new_v4()));
+    let had_previous = target.exists();
+    if had_previous {
+        std::fs::rename(target, &backup)?;
+    }
+    if let Err(error) = std::fs::rename(&replacement, target) {
+        if had_previous {
+            std::fs::rename(&backup, target)?;
+        }
+        let _ = std::fs::remove_dir_all(&replacement);
+        return Err(AppError::Internal(format!(
+            "Could not replace app bundle: {}",
+            error
+        )));
+    }
+    if had_previous {
+        let _ = std::fs::remove_dir_all(backup);
+    }
+    Ok(())
 }
 
 pub fn trigger_app_restart() {
@@ -827,5 +824,26 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(current_effective_version(&cfg), APP_VERSION);
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn invalid_macos_replacement_preserves_existing_app() {
+        let temp = tempfile::tempdir().unwrap();
+        let source = temp.path().join("download.app");
+        let target = temp.path().join("installed.app");
+        std::fs::create_dir_all(source.join("Contents/MacOS")).unwrap();
+        std::fs::create_dir_all(&target).unwrap();
+        std::fs::write(
+            source.join("Contents/MacOS/design-master"),
+            b"invalid executable",
+        )
+        .unwrap();
+        std::fs::write(target.join("user-installed-marker"), b"previous version").unwrap();
+        assert!(replace_macos_bundle(&source, &target).is_err());
+        assert_eq!(
+            std::fs::read(target.join("user-installed-marker")).unwrap(),
+            b"previous version"
+        );
     }
 }

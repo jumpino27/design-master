@@ -379,7 +379,7 @@ export default function SetupPage() {
           onClick={() => router.push("/projects")}
           className="inline-flex items-center gap-1.5 rounded-lg border border-charcoal-border bg-charcoal-surface px-3 py-1.5 text-xs font-semibold text-stone-100 hover:bg-charcoal-hover hover:text-white transition-colors"
         >
-          Explore 2 Built-In Showcase Projects →
+          Explore showcase projects →
         </button>
       </header>
 
@@ -472,7 +472,7 @@ export default function SetupPage() {
                 >
                   {status?.key_status.configured
                     ? `Saved (${status.key_status.masked_hint})`
-                    : "Optional · 2 Showcase Projects Ready"}
+                    : "Optional · Showcases ready to explore"}
                 </span>
               </div>
 
@@ -601,7 +601,7 @@ export default function SetupPage() {
               {/* Step 1 Footer */}
               <div className="flex items-center justify-between pt-3 border-t border-stone-border">
                 <span className="text-[11px] text-stone-200">
-                  No key yet? Click <strong className="text-white">Next</strong> to explore the 2 built-in showcase projects first.
+                  No key yet? Click <strong className="text-white">Next</strong> to explore the built-in showcase projects first.
                 </span>
                 <button
                   type="button"
@@ -799,13 +799,12 @@ export default function SetupPage() {
                 <div className="text-xs font-bold text-white flex items-center gap-1.5">
                   <Sparkles className="h-3.5 w-3.5 text-crimson-300" />
                   <span>
-                    2 Built-In Showcase Projects Pre-Loaded & Ready to Explore
+                    Four finished showcases, ready to explore
                   </span>
                 </div>
                 <p className="text-[11px] text-stone-200 leading-relaxed">
                   Design Master comes pre-loaded with{" "}
-                  <strong className="text-white">Aetheris Chronicles — RPG Game UI & HUD</strong> and{" "}
-                  <strong className="text-white">Jumpino View — Creator Discovery Platform</strong>{" "}
+                  <strong className="text-white">Nexora, Elevate Studio, MetricFlow, and VYBE</strong>{" "}
                   (including extracted transparent PNG assets and complete AI
                   coding agent handoff prompts) so you can inspect how it works
                   and continue generating inside them right away.

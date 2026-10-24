@@ -1,6 +1,6 @@
 {
   "name": "design-master-workspace",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "description": "Design Master (DM) — Dark-mode local AI design workbench for brand-consistent UI, multi-page flows, game HUDs, transparent assets, and coding-agent handoffs",
   "scripts": {

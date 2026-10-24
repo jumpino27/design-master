@@ -1,6 +1,6 @@
 # Interface verification
 
-Checked on 24 October 2026 for version 1.1.0.
+Checked on 24 October 2026 for version 1.1.1.
 
 The interface uses charcoal surfaces and crimson controls. All app, browser, and desktop icons derive from the Imagegen source at `assets/icons/dm-logo.png`. Its generation prompt is recorded in `assets/icons/logo-source.md`. White on the primary crimson button has a 5.44:1 contrast ratio. Project artwork and project color specimens keep their own palettes.
 

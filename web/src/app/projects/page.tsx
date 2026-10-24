@@ -731,7 +731,7 @@ function ProjectsContent() {
               <span className="hidden sm:inline">
                 {updateReport?.update_available
                   ? `Update v${updateReport.latest_version}`
-                  : `v${updateReport?.current_version || "1.1.0"}`}
+                  : `v${updateReport?.current_version || "1.1.1"}`}
               </span>
             </button>
             <button
@@ -1919,7 +1919,7 @@ function ProjectsContent() {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-white">
-                    Current Version: v{updateReport?.current_version || "1.1.0"}
+                    Current Version: v{updateReport?.current_version || "1.1.1"}
                   </span>
                   <span className="rounded-md bg-[#242427] border border-[#3A3A3D] px-2 py-0.5 text-[10px] font-mono text-crimson-300 uppercase">
                     {updateReport?.platform || "desktop"} ·{" "}

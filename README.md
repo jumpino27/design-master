@@ -48,7 +48,7 @@ Download an installer from [GitHub Releases](https://github.com/jumpino27/design
 | Windows x64 | Setup `.exe`, portable `.zip` | WebView2, checked by the installer |
 | Linux x64 | `.deb`, `.AppImage`, `.run` | WebKit2GTK 4.1 and GTK3 |
 
-For Debian or Ubuntu, use `sudo apt install ./design-master_1.1.0_amd64.deb` so the package manager installs its dependencies. The `.run` installer installs under `~/.local` and requires those libraries to be present.
+For Debian or Ubuntu, use `sudo apt install ./design-master_1.1.1_amd64.deb` so the package manager installs its dependencies. The `.run` installer installs under `~/.local` and requires those libraries to be present.
 
 The macOS app is ad hoc signed and is not notarized. Windows packages are unsigned. OS security prompts may appear. Check downloads against the release's `SHA256SUMS.txt`.
 

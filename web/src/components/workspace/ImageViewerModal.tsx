@@ -122,7 +122,7 @@ export function ImageViewerModal({
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-2 text-[11px] text-white/55 font-mono mt-0.5">
+            <div className="flex items-center gap-2 text-[11px] text-stone-muted font-mono mt-0.5">
               <span>
                 {activeOutput.width || 1024}×{activeOutput.height || 1024}px
               </span>
@@ -161,7 +161,7 @@ export function ImageViewerModal({
             onClick={() => setZoomMode("fit")}
             className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-colors ${
               zoomMode === "fit"
-                ? "bg-burnt text-white"
+                ? "bg-crimson-600 text-white"
                 : "text-white/75 hover:bg-white/10 hover:text-white"
             }`}
             title="Fit entire image inside screen"
@@ -174,7 +174,7 @@ export function ImageViewerModal({
             onClick={() => setZoomMode(1)}
             className={`rounded-lg px-2.5 py-1 font-mono text-[11px] font-semibold transition-colors ${
               zoomMode !== "fit"
-                ? "bg-burnt text-white"
+                ? "bg-crimson-600 text-white"
                 : "text-white/75 hover:bg-white/10 hover:text-white"
             }`}
             title="View at 100% pixel scale (scrollable for tall pages)"
@@ -204,7 +204,7 @@ export function ImageViewerModal({
             className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors ${
               showCheckerboard
                 ? "bg-white/15 text-white"
-                : "text-white/60 hover:bg-white/10 hover:text-white"
+                : "text-stone-muted hover:bg-white/10 hover:text-white"
             }`}
             title="Toggle alpha checkerboard background"
           >
@@ -218,7 +218,7 @@ export function ImageViewerModal({
               onClick={() => setCompareMode((c) => !c)}
               className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors ${
                 compareMode
-                  ? "bg-burnt text-white"
+                  ? "bg-crimson-600 text-white"
                   : "text-white/70 hover:bg-white/10 hover:text-white"
               }`}
               title="Compare two images side-by-side"
@@ -245,7 +245,7 @@ export function ImageViewerModal({
                 </>
               ) : (
                 <>
-                  <Copy className="h-3.5 w-3.5 text-burnt" />
+                  <Copy className="h-3.5 w-3.5 text-crimson-300" />
                   <span>Copy Prompt</span>
                 </>
               )}
@@ -259,7 +259,7 @@ export function ImageViewerModal({
                 onClose();
                 onStartHighlightEdit(activeOutput);
               }}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-burnt/50 bg-burnt/20 px-3 py-1.5 text-xs font-semibold text-amber-200 hover:bg-burnt hover:text-white transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-crimson-600/50 bg-crimson-600/20 px-3 py-1.5 text-xs font-semibold text-amber-200 hover:bg-crimson-600 hover:text-white transition-colors"
               title="Highlight a region on this image to edit with Sunburst 2.5 Medium"
             >
               <Crosshair className="h-3.5 w-3.5" />
@@ -272,7 +272,7 @@ export function ImageViewerModal({
             download={`${activeOutput.title
               .toLowerCase()
               .replace(/[^a-z0-9]+/g, "-")}.png`}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-burnt px-3.5 py-1.5 text-xs font-bold text-white hover:bg-burnt-hover transition-colors shadow-sm"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-crimson-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-crimson-700 transition-colors shadow-sm"
           >
             <Download className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Download PNG</span>
@@ -302,7 +302,7 @@ export function ImageViewerModal({
           <button
             type="button"
             onClick={() => onSelectOutput(completedOutputs[currentIndex - 1])}
-            className="fixed left-5 top-1/2 -translate-y-1/2 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/65 text-white shadow-xl hover:bg-burnt transition-colors"
+            className="fixed left-5 top-1/2 -translate-y-1/2 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/65 text-white shadow-xl hover:bg-crimson-600 transition-colors"
             title="Previous image (←)"
           >
             <ChevronLeft className="h-5 w-5" />
@@ -316,7 +316,7 @@ export function ImageViewerModal({
             <button
               type="button"
               onClick={() => onSelectOutput(completedOutputs[currentIndex + 1])}
-              className="fixed right-5 top-1/2 -translate-y-1/2 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/65 text-white shadow-xl hover:bg-burnt transition-colors"
+              className="fixed right-5 top-1/2 -translate-y-1/2 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/65 text-white shadow-xl hover:bg-crimson-600 transition-colors"
               title="Next image (→)"
             >
               <ChevronRight className="h-5 w-5" />
@@ -328,7 +328,7 @@ export function ImageViewerModal({
             <div className="flex flex-col rounded-2xl border border-white/15 bg-[#1B1A18] p-4 min-h-0">
               <div className="text-xs font-bold text-white mb-2 flex items-center justify-between">
                 <span>Left: {activeOutput.title}</span>
-                <span className="font-mono text-[11px] text-white/50">
+                <span className="font-mono text-[11px] text-stone-muted">
                   {activeOutput.width}×{activeOutput.height}
                 </span>
               </div>
@@ -353,7 +353,7 @@ export function ImageViewerModal({
                 <select
                   value={compareTarget.id}
                   onChange={(e) => setCompareOutputId(e.target.value)}
-                  className="rounded-lg border border-white/20 bg-black/50 px-2.5 py-1 text-xs text-white focus:border-burnt focus:outline-none"
+                  className="rounded-lg border border-white/20 bg-black/50 px-2.5 py-1 text-xs text-white focus:border-crimson-600 focus:outline-none"
                 >
                   {completedOutputs.map((o, idx) => (
                     <option key={o.id} value={o.id}>
@@ -423,7 +423,7 @@ export function ImageViewerModal({
                 onClick={() => onSelectOutput(o)}
                 className={`flex items-center gap-2.5 rounded-xl border p-1.5 pr-3 text-left transition-all shrink-0 ${
                   isSelected
-                    ? "border-burnt bg-burnt/20 text-white shadow-sm ring-1 ring-burnt"
+                    ? "border-crimson-600 bg-crimson-600/20 text-white shadow-sm ring-1 ring-crimson-600"
                     : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
                 }`}
               >
@@ -438,7 +438,7 @@ export function ImageViewerModal({
                   <div className="truncate max-w-[140px] text-xs font-bold">
                     {idx + 1}. {o.title}
                   </div>
-                  <div className="text-[10px] font-mono text-white/50">
+                  <div className="text-[10px] font-mono text-stone-muted">
                     {o.width || 1024}×{o.height || 1024}
                   </div>
                 </div>

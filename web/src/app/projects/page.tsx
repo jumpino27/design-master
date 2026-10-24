@@ -4,14 +4,11 @@ import React, { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   FolderPlus,
-  Layers,
   Plus,
   Settings,
   Sparkles,
-  Trash2,
   ArrowRight,
   ArrowLeft,
-  Clock,
   CheckCircle2,
   FolderOpen,
   Wand2,
@@ -41,6 +38,7 @@ import {
 } from "@/lib/api";
 import { LightDismissDialog } from "@/components/LightDismissDialog";
 import { DesignStylePickerModal } from "@/components/DesignStylePickerModal";
+import { ProjectCard } from "@/components/ProjectCard";
 import {
   buildCombinedStyleBrief,
   DESIGN_STYLE_MODIFIERS,
@@ -145,7 +143,7 @@ function ProjectsContent() {
   >("choose");
   const [wizardTab, setWizardTab] = useState<1 | 2 | 3>(1);
   const [paletteEditMode, setPaletteEditMode] = useState<"light" | "dark">(
-    "light"
+    "light",
   );
 
   // Logo file & base64 data URL for AI analysis + automatic asset upload
@@ -156,20 +154,20 @@ function ProjectsContent() {
 
   const [styleModalOpen, setStyleModalOpen] = useState(false);
   const [selectedStyle, setSelectedStyle] = useState<DesignStylePreset | null>(
-    null
+    null,
   );
   const [selectedModifierIds, setSelectedModifierIds] = useState<string[]>([]);
   const [name, setName] = useState("Forma");
   const [description, setDescription] = useState(
-    "Creative workspace and design system platform for modern product teams"
+    "Creative workspace and design system platform for modern product teams",
   );
   const [purpose, setPurpose] = useState(
-    "Convert creative teams to Pro subscribers with clear product value"
+    "Convert creative teams to Pro subscribers with clear product value",
   );
   const [industry, setIndustry] = useState("Design & Creative SaaS");
   const [targetAudience, setTargetAudience] = useState("Creative teams");
   const [audienceNeeds, setAudienceNeeds] = useState(
-    "Fast iteration, unlimited projects, and clear pricing transparency"
+    "Fast iteration, unlimited projects, and clear pricing transparency",
   );
   const [desiredAction, setDesiredAction] = useState("Start creating");
   const [brand, setBrand] = useState<BrandSpec>(DEFAULT_BRAND);
@@ -177,7 +175,7 @@ function ProjectsContent() {
   const [createError, setCreateError] = useState<string | null>(null);
 
   const [deleteTarget, setDeleteTarget] = useState<ProjectSummaryDto | null>(
-    null
+    null,
   );
   const [deleting, setDeleting] = useState(false);
   const [projectFilter, setProjectFilter] = useState<
@@ -186,7 +184,7 @@ function ProjectsContent() {
 
   // GitHub Releases Auto-Updater states
   const [updateReport, setUpdateReport] = useState<UpdateCheckReport | null>(
-    null
+    null,
   );
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [checkingUpdate, setCheckingUpdate] = useState(false);
@@ -210,7 +208,7 @@ function ProjectsContent() {
     } catch (err: unknown) {
       if (!silent) {
         setUpdateError(
-          err instanceof Error ? err.message : "Failed to check for updates"
+          err instanceof Error ? err.message : "Failed to check for updates",
         );
       }
     } finally {
@@ -231,13 +229,13 @@ function ProjectsContent() {
             auto_check_enabled: autoCheckToggle,
             auto_install_enabled: autoInstallToggle,
           }),
-        }
+        },
       );
       setUpdateReport(rep);
       setRepoInput(rep.github_repo);
     } catch (err: unknown) {
       setUpdateError(
-        err instanceof Error ? err.message : "Failed to save update settings"
+        err instanceof Error ? err.message : "Failed to save update settings",
       );
     } finally {
       setCheckingUpdate(false);
@@ -253,13 +251,13 @@ function ProjectsContent() {
         "/api/system/update/install",
         {
           method: "POST",
-        }
+        },
       );
       setInstallResult(res);
       await checkUpdates(true);
     } catch (err: unknown) {
       setUpdateError(
-        err instanceof Error ? err.message : "Failed to install update"
+        err instanceof Error ? err.message : "Failed to install update",
       );
     } finally {
       setInstallingUpdate(false);
@@ -300,13 +298,13 @@ function ProjectsContent() {
   function handleApplyDesignStyle(
     style: DesignStylePreset,
     modifierIds: string[],
-    combinedBrief: string
+    combinedBrief: string,
   ) {
     setSelectedStyle(style);
     setSelectedModifierIds(modifierIds);
     setCreateError(null);
     const modTerms = DESIGN_STYLE_MODIFIERS.filter((m) =>
-      modifierIds.includes(m.id)
+      modifierIds.includes(m.id),
     ).map((m) => m.term);
 
     setBrand((prev) => ({
@@ -355,7 +353,7 @@ function ProjectsContent() {
     }
     if (!description.trim()) {
       setCreateError(
-        "Please describe what your website or product is about so AI can craft your brand."
+        "Please describe what your website or product is about so AI can craft your brand.",
       );
       return;
     }
@@ -376,7 +374,7 @@ function ProjectsContent() {
             logo_data_url: logoDataUrl || undefined,
             preferred_style_summary: preferredSummary,
           }),
-        }
+        },
       );
 
       const p = res.proposal;
@@ -396,7 +394,7 @@ function ProjectsContent() {
 
       const combinedBrief = buildCombinedStyleBrief(
         chosenPreset,
-        selectedModifierIds
+        selectedModifierIds,
       );
 
       setBrand((prev) => ({
@@ -463,7 +461,7 @@ function ProjectsContent() {
       setCreateError(
         err instanceof Error
           ? err.message
-          : "Failed to compile Brand Kit with AI"
+          : "Failed to compile Brand Kit with AI",
       );
     } finally {
       setCompilingAi(false);
@@ -506,11 +504,11 @@ function ProjectsContent() {
     setCreateError(null);
     try {
       const modTerms = DESIGN_STYLE_MODIFIERS.filter((m) =>
-        selectedModifierIds.includes(m.id)
+        selectedModifierIds.includes(m.id),
       ).map((m) => m.term);
       const combinedBrief = buildCombinedStyleBrief(
         effectiveStyle,
-        selectedModifierIds
+        selectedModifierIds,
       );
 
       const finalBrand: BrandSpec = {
@@ -562,7 +560,7 @@ function ProjectsContent() {
           fd.append("label", `${name.trim()} Brand Logo`);
           fd.append(
             "placement_notes",
-            "Official uploaded brand logo — preserve faithfully in headers and brand marks."
+            "Official uploaded brand logo — preserve faithfully in headers and brand marks.",
           );
           fd.append("preserve_as_is", "true");
           fd.append("file", logoFile);
@@ -571,7 +569,7 @@ function ProjectsContent() {
             {
               method: "POST",
               body: fd,
-            }
+            },
           );
           if (upRes?.asset?.id) {
             await apiFetch(`/api/projects/${res.project_id}/brand`, {
@@ -593,11 +591,11 @@ function ProjectsContent() {
 
       setWizardOpen(false);
       router.push(
-        `/workspace?project=${res.project_id}&thread=${res.default_thread_id}`
+        `/workspace?project=${res.project_id}&thread=${res.default_thread_id}`,
       );
     } catch (err: unknown) {
       setCreateError(
-        err instanceof Error ? err.message : "Failed to create project"
+        err instanceof Error ? err.message : "Failed to create project",
       );
     } finally {
       setCreating(false);
@@ -649,11 +647,11 @@ function ProjectsContent() {
         }),
       });
       router.push(
-        `/workspace?project=${res.project_id}&thread=${res.default_thread_id}`
+        `/workspace?project=${res.project_id}&thread=${res.default_thread_id}`,
       );
     } catch (err: unknown) {
       setCreateError(
-        err instanceof Error ? err.message : "Failed to create sample project"
+        err instanceof Error ? err.message : "Failed to create sample project",
       );
     } finally {
       setCreating(false);
@@ -692,400 +690,247 @@ function ProjectsContent() {
   const activeDataDir = status?.data_dir || "";
 
   return (
-    <div className="h-screen overflow-hidden bg-stone-canvas flex flex-col">
-      {/* Top Header */}
-      <header className="h-14 shrink-0 bg-charcoal text-white px-6 flex items-center justify-between border-b border-charcoal-border">
-        <div className="flex items-center gap-3">
-          <img
-            src="/dm-logo.png"
-            alt="Design Master DM Logo"
-            className="h-8 w-8 rounded-lg border border-charcoal-border object-cover shadow-sm"
-          />
-          <span className="font-display font-bold tracking-tight text-white">
-            Design Master
-          </span>
-          <span className="rounded bg-burnt/20 border border-burnt/40 px-2 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-purple-200">
-            DM STUDIO
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2.5">
-          {activeDataDir && (
+    <div className="h-dvh overflow-y-auto bg-stone-canvas flex flex-col">
+      <header className="shrink-0 border-b border-stone-border/70 bg-charcoal">
+        <div className="mx-auto flex min-h-16 max-w-[1440px] flex-wrap items-center justify-between gap-3 px-5 py-3 md:px-8">
+          <div className="flex items-center gap-3">
+            <img
+              src="/dm-logo.png"
+              alt="Design Master DM Logo"
+              className="h-9 w-9 rounded-lg object-cover"
+            />
+            <span className="font-display text-base font-bold tracking-tight text-stone-ink">
+              Design Master
+            </span>
+            <span className="hidden border-l border-stone-border pl-3 text-xs text-stone-muted sm:block">
+              Projects
+            </span>
+          </div>
+          <div className="flex items-center gap-2 sm:gap-4">
+            <span className="hidden items-center gap-2 text-[11px] text-stone-muted md:inline-flex">
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${status?.key_status.configured ? "bg-emerald-400" : "bg-amber-400"}`}
+              />
+              {status?.key_status.configured
+                ? "OpenRouter connected"
+                : "API key not set"}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setUpdateModalOpen(true);
+                checkUpdates(false);
+              }}
+              title="Check for updates"
+              aria-label="Check for updates"
+              className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-2 text-[11px] transition-colors hover:bg-stone-card ${updateReport?.update_available ? "text-emerald-300" : "text-stone-muted"}`}
+            >
+              <RefreshCw
+                className={`h-3.5 w-3.5 ${checkingUpdate ? "animate-spin" : ""}`}
+              />
+              <span className="hidden sm:inline">
+                {updateReport?.update_available
+                  ? `Update v${updateReport.latest_version}`
+                  : `v${updateReport?.current_version || "1.1.0"}`}
+              </span>
+            </button>
             <button
               type="button"
               onClick={() => router.push("/settings")}
-              title={`Organized projects, threads, images & prompts.md saved in: ${activeDataDir}`}
-              className="hidden lg:inline-flex items-center gap-1.5 rounded-lg border border-[#2B3350] bg-[#141827] px-2.5 py-1.5 text-[11px] text-stone-100 hover:bg-[#1D2338] hover:text-white max-w-[260px] transition-colors"
+              className="inline-flex items-center gap-2 rounded-lg border border-stone-border px-3 py-2 text-xs font-medium text-stone-100 transition-colors hover:bg-stone-card"
             >
-              <FolderOpen className="h-3.5 w-3.5 text-burnt shrink-0" />
-              <span className="truncate font-mono">{activeDataDir}</span>
+              <Settings className="h-3.5 w-3.5" />
+              <span>
+                Settings <span className="hidden sm:inline">& Usage</span>
+              </span>
             </button>
-          )}
-
-          <button
-            type="button"
-            onClick={() => {
-              setUpdateModalOpen(true);
-              checkUpdates(false);
-            }}
-            className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-all ${
-              updateReport?.update_available
-                ? "border-emerald-400/60 bg-emerald-500/15 text-emerald-200 hover:bg-emerald-500/25 shadow-[0_0_16px_rgba(16,185,129,0.25)]"
-                : "border-[#2B3350] bg-[#161B2C] text-stone-100 hover:bg-[#20273F] hover:text-white"
-            }`}
-            title="Check GitHub Releases & Configure Safe Auto-Updates"
-          >
-            <RefreshCw
-              className={`h-3.5 w-3.5 ${
-                checkingUpdate
-                  ? "animate-spin text-purple-300"
-                  : updateReport?.update_available
-                  ? "text-emerald-300"
-                  : "text-cyan-400"
-              }`}
-            />
-            <span>
-              {updateReport?.update_available
-                ? `Update v${updateReport.latest_version}`
-                : `v${updateReport?.current_version || "1.0.0"} · Updates`}
-            </span>
-          </button>
-
-          <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-stone-100 px-2">
-            <span
-              className={`h-2 w-2 rounded-full ${
-                status?.key_status.configured
-                  ? "bg-emerald-400"
-                  : "bg-amber-400"
-              }`}
-            />
-            <span>
-              {status?.key_status.configured
-                ? "OpenRouter Connected"
-                : "API Key Not Set"}
-            </span>
           </div>
-
-          <button
-            type="button"
-            onClick={() => router.push("/setup")}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[#2B3350] bg-[#161B2C] px-3 py-1.5 text-xs font-semibold text-stone-100 hover:bg-[#20273F] hover:text-white transition-colors"
-          >
-            <Wand2 className="h-3.5 w-3.5 text-burnt" />
-            <span>Setup Wizard</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => router.push("/settings")}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[#2B3350] bg-[#161B2C] px-3 py-1.5 text-xs font-semibold text-stone-100 hover:bg-[#20273F] hover:text-white transition-colors"
-          >
-            <Settings className="h-3.5 w-3.5 text-purple-300" />
-            <span>Settings & Usage</span>
-          </button>
         </div>
       </header>
 
-      {/* Main Bounded Dashboard Container */}
-      <main className="flex-1 min-h-0 max-w-6xl w-full mx-auto py-6 px-6 flex flex-col gap-5">
-        <div className="@container shrink-0 rounded-2xl border border-[#242C46] bg-gradient-to-b from-[#131829] to-[#0E1220] p-5 shadow-[0_16px_40px_rgba(0,0,0,0.45)]">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            {/* Left Title & Metadata */}
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2.5">
-                <h1 className="text-xl font-bold tracking-tight text-white">
+      <main className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col px-5 py-6 md:px-8">
+        <div
+          className="sticky top-0 z-20 -mx-5 bg-stone-canvas px-5 pb-4 pt-3 md:-mx-8 md:px-8"
+          data-testid="project-library-toolbar"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="font-display text-2xl font-semibold tracking-tight text-stone-ink">
                   Local Projects
                 </h1>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/15 border border-purple-400/35 px-2.5 py-0.5 text-[11px] font-semibold text-purple-200">
-                  <span>{projects.length} Total</span>
+                <span className="rounded-md border border-stone-border bg-stone-surface px-2 py-0.5 text-xs tabular-nums text-stone-muted">
+                  {projects.length}
                 </span>
-                {showcaseCount > 0 && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#181F36] border border-[#2B3558] px-2.5 py-0.5 text-[11px] font-medium text-slate-300">
-                    <span>{showcaseCount} Showcase</span>
-                    {customCount > 0 && <span>· {customCount} Custom</span>}
-                  </span>
-                )}
               </div>
-              <p className="text-xs text-slate-300 mt-1 leading-relaxed max-w-xl">
-                Each project maintains its own versioned brand kit, uploaded
-                assets, multi-tab canvas, and coding-agent handoffs.
+              <p className="mt-1.5 text-xs leading-5 text-stone-muted">
+                Your designs, brand kits, and coding-agent handoffs. Saved
+                locally.
               </p>
             </div>
-
-            {/* Right Single-Row Command Toolbar */}
-            <div className="shrink-0 flex flex-wrap sm:flex-nowrap items-center gap-2.5">
-              {/* Category Segmented Pills */}
-              {projects.length > 0 && (
-                <div className="inline-flex h-9 items-center rounded-xl border border-[#2B3350] bg-[#0B0E18] p-1">
-                  {(
-                    [
-                      { id: "all", label: "All" },
-                      { id: "custom", label: "Custom" },
-                      { id: "examples", label: "Showcase" },
-                    ] as const
-                  ).map((tab) => {
-                    const active = projectFilter === tab.id;
-                    return (
-                      <button
-                        key={tab.id}
-                        type="button"
-                        onClick={() => setProjectFilter(tab.id)}
-                        className={`h-7 rounded-lg px-2.5 text-[11px] font-semibold transition-all ${
-                          active
-                            ? "bg-[#7C3AED] text-white shadow-sm"
-                            : "text-slate-300 hover:text-white"
-                        }`}
-                      >
-                        {tab.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Search Input */}
-              {projects.length > 0 && (
-                <div className="relative">
-                  <Search className="h-3.5 w-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search projects..."
-                    className="h-9 w-48 rounded-xl border border-[#2B3350] bg-[#0B0E18] pl-8 pr-7 text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-purple-400 transition-colors"
-                  />
-                  {searchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setSearchQuery("")}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
-                      title="Clear search"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {/* Quick Forma Demo CTA */}
+            <div className="flex items-center gap-3">
               <button
                 type="button"
                 disabled={creating}
                 onClick={handleQuickSampleProject}
-                className="h-9 whitespace-nowrap inline-flex items-center gap-1.5 rounded-xl border border-[#2E3858] bg-[#171D32] px-3.5 text-xs font-semibold text-slate-100 hover:bg-[#202844] hover:border-purple-400/50 shadow-sm disabled:opacity-50 transition-all"
+                className="inline-flex items-center gap-1.5 rounded-lg px-2 py-2.5 text-xs font-medium text-stone-muted transition-colors hover:bg-stone-surface hover:text-stone-ink disabled:opacity-50"
               >
-                <Sparkles className="h-3.5 w-3.5 text-purple-300 shrink-0" />
-                <span>{creating ? "Creating..." : 'Quick "Forma" Demo'}</span>
+                <Sparkles className="h-3.5 w-3.5" />
+                {creating ? "Creating..." : "Try a demo"}
               </button>
-
-              {/* New Project Primary CTA */}
               <button
                 type="button"
                 onClick={openNewProjectWizard}
-                className="h-9 whitespace-nowrap inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#6D28D9] px-4 text-xs font-semibold text-white shadow-[0_6px_18px_rgba(124,58,237,0.38)] hover:from-[#8B5CF6] hover:to-[#7C3AED] transition-all"
+                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-lg bg-crimson-600 px-4 text-xs font-semibold text-white transition-colors hover:bg-crimson-700"
               >
-                <Plus className="h-4 w-4 shrink-0" />
-                <span>New Project</span>
+                <Plus className="h-4 w-4" /> New Project
               </button>
             </div>
           </div>
-        </div>
 
-        {/* Scrollable Bounded Project Grid */}
-        <div className="flex-1 min-h-0 overflow-y-auto pr-1">
-          {loading ? (
-            <div className="h-full min-h-[280px] rounded-2xl border border-stone-border bg-stone-surface p-12 flex items-center justify-center text-sm text-stone-muted">
-              Loading projects...
-            </div>
-          ) : projects.length === 0 ? (
-            <div className="h-full min-h-[320px] rounded-2xl border border-dashed border-stone-border bg-stone-surface p-10 flex flex-col items-center justify-center text-center space-y-4">
-              <div className="mx-auto h-12 w-12 rounded-2xl bg-burnt/10 text-burnt flex items-center justify-center">
-                <FolderPlus className="h-6 w-6" />
-              </div>
-              <div className="max-w-md mx-auto">
-                <h2 className="text-base font-bold text-stone-ink">
-                  No local projects yet
-                </h2>
-                <p className="text-xs text-stone-muted mt-1 leading-relaxed">
-                  Create your first project manually or let AI craft your Brand
-                  Kit, Light & Dark color palettes, and Web Design Style from
-                  your logo and product description.
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
-                <button
-                  type="button"
-                  onClick={openNewProjectWizard}
-                  className="inline-flex items-center gap-2 rounded-lg bg-burnt px-5 py-2.5 text-sm font-semibold text-white hover:bg-burnt-hover shadow-sm"
-                >
-                  <Sparkles className="h-4 w-4" />
-                  <span>Create first project</span>
-                </button>
-                <button
-                  type="button"
-                  disabled={creating}
-                  onClick={handleQuickSampleProject}
-                  className="inline-flex items-center gap-2 rounded-lg border border-stone-border bg-white px-4 py-2.5 text-sm font-semibold text-stone-ink hover:bg-stone-canvas shadow-sm disabled:opacity-50"
-                >
-                  <span>
-                    {creating
-                      ? "Creating Forma..."
-                      : '1-Click "Forma" Sample Project'}
-                  </span>
-                  <ArrowRight className="h-4 w-4 text-burnt" />
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
-              {filteredProjects.map((p) => {
-                const colors = p.brand?.colors?.light;
-                const savedStyle = p.brand?.design_style;
-                const stylePreset = findDesignStyleById(savedStyle?.style_id);
-                return (
-                  <div
-                    key={p.id}
-                    className="group rounded-xl border border-stone-border bg-stone-surface hover:border-burnt/60 transition flex flex-col justify-between overflow-hidden shadow-sm"
+          {projects.length > 0 && (
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-b border-stone-border/70 pb-4">
+              <div
+                className="inline-flex items-center gap-1 rounded-lg border border-stone-border bg-stone-surface p-1"
+                role="group"
+                aria-label="Filter projects"
+              >
+                {(
+                  [
+                    { id: "all", label: "All", count: projects.length },
+                    { id: "custom", label: "Custom", count: customCount },
+                    { id: "examples", label: "Showcase", count: showcaseCount },
+                  ] as const
+                ).map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    aria-pressed={projectFilter === tab.id}
+                    onClick={() => setProjectFilter(tab.id)}
+                    className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-[11px] font-medium transition-colors ${projectFilter === tab.id ? "bg-stone-card text-stone-ink shadow-sm" : "text-stone-muted hover:text-stone-ink"}`}
                   >
-                    <div>
-                      <div className="h-32 bg-stone-canvas border-b border-stone-border relative flex items-center justify-center overflow-hidden">
-                        {p.recent_output_id ? (
-                          <img
-                            src={`/media/output/${p.recent_output_id}/thumbnail`}
-                            alt={`${p.name} recent output`}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : stylePreset ? (
-                          <img
-                            src={stylePreset.heroImage}
-                            alt={`${p.name} ${stylePreset.name} style preview`}
-                            className="w-full h-full object-cover object-top"
-                          />
-                        ) : (
-                          <div className="flex items-center gap-3 px-5 py-3.5 rounded-xl bg-white/90 border border-stone-border shadow-sm">
-                            <div
-                              className="h-9 w-9 rounded-lg flex items-center justify-center font-bold text-white text-sm"
-                              style={{
-                                backgroundColor: colors?.accent || "#1E1D1B",
-                              }}
-                            >
-                              {p.brand?.logo?.monogram_text ||
-                                p.name.charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                              <div className="text-sm font-bold text-stone-ink">
-                                {p.name}
-                              </div>
-                              <div className="text-[11px] text-stone-muted">
-                                {p.brand?.typography?.heading_family || "Inter"}{" "}
-                                · {p.target_audience || "Product teams"}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                        {savedStyle?.style_name && (
-                          <span className="absolute top-2.5 left-2.5 rounded-md bg-burnt/95 backdrop-blur px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
-                            #{savedStyle.style_number} · {savedStyle.style_name}
-                          </span>
-                        )}
-                        <span className="absolute top-2.5 right-2.5 rounded-md bg-charcoal/80 backdrop-blur px-2 py-0.5 text-[10px] font-medium text-white">
-                          Brand v{p.brand_version}
-                        </span>
-                      </div>
-
-                      <div className="p-4 space-y-2.5">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <h2 className="text-sm font-bold text-stone-ink">
-                              {p.name}
-                            </h2>
-                            <p className="text-xs text-stone-muted line-clamp-2 mt-0.5">
-                              {p.description ||
-                                p.purpose ||
-                                "Local design project"}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-1 shrink-0">
-                            {[
-                              colors?.primary || "#D56A3A",
-                              colors?.accent || "#1E1D1B",
-                              colors?.background || "#F4F1EA",
-                              colors?.surface || "#FAF9F6",
-                            ].map((hex, i) => (
-                              <span
-                                key={i}
-                                title={hex}
-                                className="h-3.5 w-3.5 rounded border border-stone-border"
-                                style={{ backgroundColor: hex }}
-                              />
-                            ))}
-                          </div>
-                        </div>
-
-                        {savedStyle?.style_name && (
-                          <div className="rounded-lg bg-stone-canvas border border-stone-border px-2.5 py-1.5 text-[11px] text-stone-ink">
-                            <span className="font-semibold text-burnt">
-                              Style #{savedStyle.style_number}{" "}
-                              {savedStyle.style_name}:
-                            </span>{" "}
-                            <span className="text-stone-muted line-clamp-1">
-                              {savedStyle.definition}
-                            </span>
-                          </div>
-                        )}
-
-                        <div className="flex items-center gap-4 text-[11px] text-stone-muted pt-0.5">
-                          <span className="inline-flex items-center gap-1">
-                            <Layers className="h-3.5 w-3.5" />
-                            {p.thread_count} threads · {p.run_count} runs
-                          </span>
-                          <span className="inline-flex items-center gap-1">
-                            <Clock className="h-3.5 w-3.5" />
-                            {new Date(p.updated_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="px-4 py-2.5 bg-white border-t border-stone-border flex items-center justify-between">
-                      {p.is_example ? (
-                        <span
-                          title="Built-in showcase example project — cannot be deleted, but you can freely open, inspect, modify, and generate new tabs inside it!"
-                          className="inline-flex items-center gap-1.5 rounded-md border border-burnt/40 bg-burnt/15 px-2.5 py-1 text-[10px] font-semibold text-purple-200"
-                        >
-                          <Sparkles className="h-3 w-3 text-burnt" />
-                          <span>Built-in Example · Editable</span>
-                        </span>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => setDeleteTarget(p)}
-                          aria-label={`Delete project ${p.name}`}
-                          className="rounded-lg p-1.5 text-stone-muted hover:bg-red-50 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const t = p.default_thread_id
-                            ? `&thread=${p.default_thread_id}`
-                            : "";
-                          router.push(`/workspace?project=${p.id}${t}`);
-                        }}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-burnt px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-burnt-hover shadow-sm"
-                      >
-                        <span>Open workbench</span>
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+                    {tab.label}
+                    <span
+                      className={`text-[10px] tabular-nums ${projectFilter === tab.id ? "text-crimson-300" : "text-stone-muted"}`}
+                    >
+                      {tab.count}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <div className="relative w-full sm:w-72">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-muted" />
+                <input
+                  type="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search projects..."
+                  aria-label="Search projects"
+                  className="h-10 w-full rounded-lg border border-stone-border pl-9 pr-9 text-xs"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    aria-label="Clear search"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-stone-muted hover:text-stone-ink"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>
+
+        <div className="mt-1">
+          {loading ? (
+            <div
+              className="flex min-h-[280px] items-center justify-center rounded-2xl border border-stone-border text-sm text-stone-muted"
+              role="status"
+            >
+              Loading projects...
+            </div>
+          ) : projects.length === 0 ? (
+            <div className="flex min-h-[360px] flex-col items-center justify-center rounded-2xl border border-dashed border-stone-border bg-stone-surface p-8 text-center">
+              <FolderPlus className="mb-4 h-8 w-8 text-crimson-300" />
+              <h2 className="text-lg font-semibold text-stone-ink">
+                Create your first project
+              </h2>
+              <p className="mt-2 max-w-md text-sm leading-6 text-stone-muted">
+                Start with a brand kit and a design style, then use chat to
+                build your first design.
+              </p>
+              <button
+                type="button"
+                onClick={openNewProjectWizard}
+                className="mt-5 inline-flex items-center gap-2 rounded-lg bg-crimson-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-crimson-700"
+              >
+                <Plus className="h-4 w-4" /> Create first project
+              </button>
+            </div>
+          ) : filteredProjects.length === 0 ? (
+            <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-dashed border-stone-border text-center">
+              <Search className="mb-3 h-6 w-6 text-stone-muted" />
+              <h2 className="text-base font-semibold text-stone-ink">
+                No matching projects
+              </h2>
+              <p className="mt-2 text-xs text-stone-muted">
+                Try another search or show all projects.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery("");
+                  setProjectFilter("all");
+                }}
+                className="mt-4 rounded-lg border border-stone-border px-3 py-2 text-xs text-stone-ink hover:bg-stone-card"
+              >
+                Clear filters
+              </button>
+            </div>
+          ) : (
+            <div
+              className="grid grid-cols-1 gap-5 md:grid-cols-2"
+              aria-label="Project library"
+            >
+              {filteredProjects.map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  onDelete={() => setDeleteTarget(project)}
+                  onOpen={() =>
+                    router.push(
+                      `/workspace?project=${project.id}${project.default_thread_id ? `&thread=${project.default_thread_id}` : ""}`,
+                    )
+                  }
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        <footer className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-6 text-[10px] text-stone-muted">
+          <button
+            type="button"
+            onClick={() => router.push("/settings")}
+            title={activeDataDir}
+            className="inline-flex min-w-0 max-w-full items-center gap-2 rounded py-1 text-left hover:text-stone-ink"
+          >
+            <FolderOpen className="h-3.5 w-3.5 shrink-0" />
+            <span className="shrink-0">Local workspace</span>
+            <span className="hidden max-w-[520px] truncate font-mono opacity-80 lg:block">
+              {activeDataDir}
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push("/setup")}
+            className="inline-flex items-center gap-1.5 rounded py-1 hover:text-stone-ink"
+          >
+            <Wand2 className="h-3 w-3" /> Setup Wizard
+          </button>
+        </footer>
       </main>
 
       {/* Multi-Mode Project Creation Wizard Modal */}
@@ -1096,19 +941,19 @@ function ProjectsContent() {
           wizardMode === "choose"
             ? "Create New Project"
             : wizardMode === "ai_input"
-            ? "✨ Create Project & Brand Kit with AI"
-            : wizardMode === "ai_review"
-            ? "✨ Review AI-Compiled Brand Kit & Project"
-            : "🛠️ Manual Project & Brand Kit Setup"
+              ? "✨ Create Project & Brand Kit with AI"
+              : wizardMode === "ai_review"
+                ? "✨ Review AI-Compiled Brand Kit & Project"
+                : "🛠️ Manual Project & Brand Kit Setup"
         }
         subtitle={
           wizardMode === "choose"
             ? "Choose whether you want AI to craft your Brand Kit, Light & Dark palettes, and Design Style from your logo & description, or configure manually."
             : wizardMode === "ai_input"
-            ? "Upload your logo (optional) and tell AI what your website or product is about."
-            : wizardMode === "ai_review"
-            ? "Review and tweak the AI-compiled Brand Kit, Light & Dark palettes, and Web Design Style before creating."
-            : "Configure your project brief, Light & Dark color palettes, and typography step by step."
+              ? "Upload your logo (optional) and tell AI what your website or product is about."
+              : wizardMode === "ai_review"
+                ? "Review and tweak the AI-compiled Brand Kit, Light & Dark palettes, and Web Design Style before creating."
+                : "Configure your project brief, Light & Dark color palettes, and typography step by step."
         }
         maxWidthClass="max-w-2xl"
       >
@@ -1122,14 +967,14 @@ function ProjectsContent() {
                   setCreateError(null);
                   setWizardMode("ai_input");
                 }}
-                className="group text-left rounded-2xl border-2 border-burnt bg-gradient-to-br from-[#241744] via-[#15192B] to-[#0E111D] p-5 hover:border-purple-400 hover:shadow-[0_0_24px_rgba(124,58,237,0.25)] transition flex flex-col justify-between gap-4"
+                className="group text-left rounded-2xl border-2 border-crimson-600 bg-gradient-to-br from-[#341921] via-[#19191C] to-[#111114] p-5 hover:border-crimson-400 hover:shadow-[0_0_24px_rgba(201,39,70,0.25)] transition flex flex-col justify-between gap-4"
               >
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-burnt text-white shadow-sm">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-crimson-600 text-white shadow-sm">
                       <Sparkles className="h-5 w-5" />
                     </span>
-                    <span className="rounded-full bg-burnt/25 border border-burnt/50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-purple-200">
+                    <span className="rounded-full bg-crimson-600/25 border border-crimson-600/50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-crimson-300">
                       Recommended
                     </span>
                   </div>
@@ -1138,14 +983,19 @@ function ProjectsContent() {
                   </h3>
                   <p className="text-xs text-stone-200 leading-relaxed">
                     Provide your <strong className="text-white">Logo</strong> +{" "}
-                    <strong className="text-white">what your website or game UI is about</strong>. AI will
-                    compile every field, craft harmonious{" "}
-                    <strong className="text-white">Light & Dark Mode color palettes</strong>, pick
-                    fonts, and select the best <strong className="text-white">Web Design Style</strong>{" "}
-                    for your quick review.
+                    <strong className="text-white">
+                      what your website or game UI is about
+                    </strong>
+                    . AI will compile every field, craft harmonious{" "}
+                    <strong className="text-white">
+                      Light & Dark Mode color palettes
+                    </strong>
+                    , pick fonts, and select the best{" "}
+                    <strong className="text-white">Web Design Style</strong> for
+                    your quick review.
                   </p>
                 </div>
-                <div className="inline-flex items-center gap-1.5 text-xs font-bold text-purple-300 group-hover:text-white group-hover:translate-x-0.5 transition">
+                <div className="inline-flex items-center gap-1.5 text-xs font-bold text-crimson-300 group-hover:text-white group-hover:translate-x-0.5 transition">
                   <span>Start with AI</span>
                   <ArrowRight className="h-4 w-4" />
                 </div>
@@ -1158,14 +1008,14 @@ function ProjectsContent() {
                   setWizardMode("manual");
                   setWizardTab(1);
                 }}
-                className="group text-left rounded-2xl border border-[#2B3350] bg-[#141827] p-5 hover:border-burnt/60 hover:bg-[#191F33] hover:shadow-md transition flex flex-col justify-between gap-4"
+                className="group text-left rounded-2xl border border-[#333336] bg-[#18181B] p-5 hover:border-crimson-600/60 hover:bg-[#1F1F22] hover:shadow-md transition flex flex-col justify-between gap-4"
               >
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#1F263D] border border-[#323C5E] text-white shadow-sm">
-                      <Sliders className="h-5 w-5 text-purple-300" />
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#262629] border border-[#3C3C3F] text-white shadow-sm">
+                      <Sliders className="h-5 w-5 text-crimson-300" />
                     </span>
-                    <span className="rounded-full bg-[#1C2236] border border-[#2E3756] px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-stone-200">
+                    <span className="rounded-full bg-[#222225] border border-[#37373A] px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-stone-200">
                       Full Control
                     </span>
                   </div>
@@ -1174,14 +1024,19 @@ function ProjectsContent() {
                   </h3>
                   <p className="text-xs text-stone-200 leading-relaxed">
                     Set up your Project Brief, pick from the{" "}
-                    <strong className="text-white">20 Curated Web Design Systems</strong>, and customize your{" "}
-                    <strong className="text-white">Light & Dark Mode color palettes</strong>,
-                    typography, and stack manually.
+                    <strong className="text-white">
+                      20 Curated Web Design Systems
+                    </strong>
+                    , and customize your{" "}
+                    <strong className="text-white">
+                      Light & Dark Mode color palettes
+                    </strong>
+                    , typography, and stack manually.
                   </p>
                 </div>
                 <div className="inline-flex items-center gap-1.5 text-xs font-bold text-white group-hover:translate-x-0.5 transition">
                   <span>Configure Manually</span>
-                  <ArrowRight className="h-4 w-4 text-burnt" />
+                  <ArrowRight className="h-4 w-4 text-crimson-300" />
                 </div>
               </button>
             </div>
@@ -1201,7 +1056,7 @@ function ProjectsContent() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Jumpino Tech, NovaCloud, Forma"
-                  className="w-full rounded-xl border border-stone-border bg-white px-3.5 py-2.5 text-xs font-medium text-stone-ink focus:outline-none focus:border-burnt"
+                  className="w-full rounded-xl border border-stone-border bg-white px-3.5 py-2.5 text-xs font-medium text-stone-ink focus:outline-none focus:border-crimson-600"
                 />
               </div>
 
@@ -1219,7 +1074,7 @@ function ProjectsContent() {
                   }
                 />
                 {logoDataUrl ? (
-                  <div className="flex items-center justify-between gap-2 rounded-xl border border-burnt/50 bg-stone-surface px-3 py-1.5">
+                  <div className="flex items-center justify-between gap-2 rounded-xl border border-crimson-600/50 bg-stone-surface px-3 py-1.5">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <img
                         src={logoDataUrl}
@@ -1247,9 +1102,9 @@ function ProjectsContent() {
                   <button
                     type="button"
                     onClick={() => logoInputRef.current?.click()}
-                    className="w-full flex items-center justify-center gap-2 rounded-xl border border-dashed border-stone-border bg-stone-surface hover:border-burnt px-3.5 py-2.5 text-xs font-semibold text-stone-ink transition"
+                    className="w-full flex items-center justify-center gap-2 rounded-xl border border-dashed border-stone-border bg-stone-surface hover:border-crimson-600 px-3.5 py-2.5 text-xs font-semibold text-stone-ink transition"
                   >
-                    <Upload className="h-3.5 w-3.5 text-burnt" />
+                    <Upload className="h-3.5 w-3.5 text-crimson-300" />
                     <span>Upload Logo (PNG / SVG / WebP)</span>
                   </button>
                 )}
@@ -1270,7 +1125,7 @@ function ProjectsContent() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Example: A link-in-bio and digital storefront platform for creators with warm tactile skeuomorphic leather & brushed brass cards, instant WhatsApp contact, and simple pricing..."
-                className="w-full rounded-xl border border-stone-border bg-white p-3 text-xs text-stone-ink leading-relaxed focus:outline-none focus:border-burnt"
+                className="w-full rounded-xl border border-stone-border bg-white p-3 text-xs text-stone-ink leading-relaxed focus:outline-none focus:border-crimson-600"
               />
             </div>
 
@@ -1290,7 +1145,7 @@ function ProjectsContent() {
                 onClick={() => setStyleModalOpen(true)}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-stone-border bg-white px-3 py-1.5 text-xs font-semibold text-stone-ink hover:bg-stone-canvas shrink-0"
               >
-                <Palette className="h-3.5 w-3.5 text-burnt" />
+                <Palette className="h-3.5 w-3.5 text-crimson-300" />
                 <span>
                   {selectedStyle ? "Change Style" : "Pick Style Manually"}
                 </span>
@@ -1317,7 +1172,7 @@ function ProjectsContent() {
                 type="button"
                 disabled={compilingAi}
                 onClick={handleCompileWithAi}
-                className="inline-flex items-center gap-2 rounded-xl bg-burnt px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-burnt-hover disabled:opacity-60"
+                className="inline-flex items-center gap-2 rounded-xl bg-crimson-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-crimson-700 disabled:opacity-60"
               >
                 {compilingAi ? (
                   <>
@@ -1350,7 +1205,7 @@ function ProjectsContent() {
               <button
                 type="button"
                 onClick={() => setWizardMode("ai_input")}
-                className="text-[11px] font-semibold text-burnt hover:underline shrink-0"
+                className="text-[11px] font-semibold text-crimson-300 hover:underline shrink-0"
               >
                 Re-prompt AI
               </button>
@@ -1367,7 +1222,7 @@ function ProjectsContent() {
                 <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5">
-                      <span className="rounded bg-burnt px-1.5 py-0.5 text-[10px] font-bold text-white">
+                      <span className="rounded bg-crimson-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
                         Style #{selectedStyle.number}
                       </span>
                       <span className="text-xs font-bold text-stone-ink">
@@ -1584,7 +1439,7 @@ function ProjectsContent() {
                 type="button"
                 disabled={creating}
                 onClick={() => handleCreateProject()}
-                className="inline-flex items-center gap-2 rounded-xl bg-burnt px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-burnt-hover disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-xl bg-crimson-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-crimson-700 disabled:opacity-50"
               >
                 <CheckCircle2 className="h-4 w-4" />
                 <span>
@@ -1621,7 +1476,7 @@ function ProjectsContent() {
                     : "text-stone-muted hover:text-stone-ink"
                 }`}
               >
-                <FileText className="h-3.5 w-3.5 text-burnt" />
+                <FileText className="h-3.5 w-3.5 text-crimson-300" />
                 <span>1. Project Brief</span>
               </button>
               <button
@@ -1633,7 +1488,7 @@ function ProjectsContent() {
                     : "text-stone-muted hover:text-stone-ink"
                 }`}
               >
-                <Palette className="h-3.5 w-3.5 text-burnt" />
+                <Palette className="h-3.5 w-3.5 text-crimson-300" />
                 <span>2. Light & Dark Palettes</span>
               </button>
               <button
@@ -1645,7 +1500,7 @@ function ProjectsContent() {
                     : "text-stone-muted hover:text-stone-ink"
                 }`}
               >
-                <Code2 className="h-3.5 w-3.5 text-burnt" />
+                <Code2 className="h-3.5 w-3.5 text-crimson-300" />
                 <span>3. Fonts & Stack</span>
               </button>
             </div>
@@ -1655,8 +1510,8 @@ function ProjectsContent() {
                 <div
                   className={`rounded-xl border p-3.5 transition-all ${
                     selectedStyle
-                      ? "border-burnt/50 bg-stone-surface"
-                      : "border-dashed border-burnt bg-burnt/5"
+                      ? "border-crimson-600/50 bg-stone-surface"
+                      : "border-dashed border-crimson-600 bg-crimson-600/5"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-3">
@@ -1665,21 +1520,21 @@ function ProjectsContent() {
                         <span className="text-xs font-bold text-stone-ink">
                           Web Design Style & System Definition *
                         </span>
-                        <span className="rounded-full bg-burnt/20 border border-burnt/40 px-2 py-0.5 text-[10px] font-semibold text-purple-200">
+                        <span className="rounded-full bg-crimson-600/20 border border-crimson-600/40 px-2 py-0.5 text-[10px] font-semibold text-crimson-300">
                           20 Systems
                         </span>
                       </div>
                       <p className="text-[11px] text-stone-muted mt-0.5">
-                        Choose one of the 20 curated web design systems so the AI planner
-                        and image generator craft every screen to match your
-                        design system.
+                        Choose one of the 20 curated web design systems so the
+                        AI planner and image generator craft every screen to
+                        match your design system.
                       </p>
                     </div>
                     <button
                       type="button"
                       data-testid="choose-style-btn"
                       onClick={() => setStyleModalOpen(true)}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-burnt px-3.5 py-2 text-xs font-semibold text-white hover:bg-burnt-hover shadow-sm shrink-0"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-crimson-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-crimson-700 shadow-sm shrink-0"
                     >
                       <Palette className="h-3.5 w-3.5" />
                       <span>
@@ -1784,7 +1639,8 @@ function ProjectsContent() {
               <div className="rounded-xl border border-stone-border bg-white p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="text-xs font-bold text-stone-ink">
-                    Color Palette ({paletteEditMode === "light" ? "Light Mode" : "Dark Mode"})
+                    Color Palette (
+                    {paletteEditMode === "light" ? "Light Mode" : "Dark Mode"})
                   </div>
                   <div className="inline-flex rounded-lg bg-stone-canvas p-0.5 border border-stone-border">
                     <button
@@ -1975,7 +1831,7 @@ function ProjectsContent() {
                 <button
                   type="submit"
                   disabled={creating}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-burnt px-4 py-2 text-xs font-semibold text-white hover:bg-burnt-hover disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-crimson-600 px-4 py-2 text-xs font-semibold text-white hover:bg-crimson-700 disabled:opacity-50"
                 >
                   <CheckCircle2 className="h-3.5 w-3.5" />
                   <span>
@@ -2016,7 +1872,9 @@ function ProjectsContent() {
             <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-900 space-y-1">
               <div className="font-semibold">Affected items to be removed:</div>
               <div>• {deleteTarget.thread_count} threads</div>
-              <div>• {deleteTarget.run_count} generation runs & saved outputs</div>
+              <div>
+                • {deleteTarget.run_count} generation runs & saved outputs
+              </div>
               <div>• Versioned brand kit (v{deleteTarget.brand_version})</div>
             </div>
             <div className="flex items-center justify-end gap-2">
@@ -2054,16 +1912,16 @@ function ProjectsContent() {
             className={`rounded-xl border p-4 ${
               updateReport?.update_available
                 ? "border-emerald-500/40 bg-emerald-950/30"
-                : "border-[#2B3350] bg-[#121728]"
+                : "border-[#333336] bg-[#17171A]"
             }`}
           >
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-white">
-                    Current Version: v{updateReport?.current_version || "1.0.0"}
+                    Current Version: v{updateReport?.current_version || "1.1.0"}
                   </span>
-                  <span className="rounded-md bg-[#1D243C] border border-[#2F3A5E] px-2 py-0.5 text-[10px] font-mono text-purple-200 uppercase">
+                  <span className="rounded-md bg-[#242427] border border-[#3A3A3D] px-2 py-0.5 text-[10px] font-mono text-crimson-300 uppercase">
                     {updateReport?.platform || "desktop"} ·{" "}
                     {updateReport?.arch || "native"}
                   </span>
@@ -2083,10 +1941,10 @@ function ProjectsContent() {
                 type="button"
                 disabled={checkingUpdate}
                 onClick={() => checkUpdates(false)}
-                className="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-[#2E3858] bg-[#182038] px-3 py-1.5 text-xs font-semibold text-slate-100 hover:bg-[#222C4A] disabled:opacity-50"
+                className="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-[#38383B] bg-[#202023] px-3 py-1.5 text-xs font-semibold text-slate-100 hover:bg-[#2C2C2F] disabled:opacity-50"
               >
                 <RefreshCw
-                  className={`h-3.5 w-3.5 text-cyan-400 ${
+                  className={`h-3.5 w-3.5 text-crimson-300 ${
                     checkingUpdate ? "animate-spin" : ""
                   }`}
                 />
@@ -2095,7 +1953,7 @@ function ProjectsContent() {
             </div>
 
             {updateReport?.release_notes && (
-              <div className="mt-3 rounded-lg border border-[#262F4D] bg-[#0B0E18] p-3 text-xs text-slate-200 max-h-36 overflow-y-auto whitespace-pre-wrap font-mono">
+              <div className="mt-3 rounded-lg border border-[#2F2F32] bg-[#0E0E11] p-3 text-xs text-slate-200 max-h-36 overflow-y-auto whitespace-pre-wrap font-mono">
                 {updateReport.release_notes}
               </div>
             )}
@@ -2106,7 +1964,7 @@ function ProjectsContent() {
                   href={updateReport.release_html_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1 text-purple-300 hover:text-purple-200 underline"
+                  className="inline-flex items-center gap-1 text-crimson-300 hover:text-crimson-300 underline"
                 >
                   <span>View GitHub Releases ({updateReport.github_repo})</span>
                   <ExternalLink className="h-3 w-3" />
@@ -2124,7 +1982,7 @@ function ProjectsContent() {
           </div>
 
           {/* Repository & Auto-Update Preferences */}
-          <div className="rounded-xl border border-[#262F4D] bg-[#101424] p-4 space-y-3">
+          <div className="rounded-xl border border-[#2F2F32] bg-[#141417] p-4 space-y-3">
             <div>
               <label className="block text-xs font-semibold text-white mb-1">
                 GitHub Repository (`owner/repo`)
@@ -2135,13 +1993,13 @@ function ProjectsContent() {
                   value={repoInput}
                   onChange={(e) => setRepoInput(e.target.value)}
                   placeholder="owner/design-master"
-                  className="flex-1 h-9 rounded-lg border border-[#2B3350] bg-[#0B0E18] px-3 text-xs text-white font-mono focus:outline-none focus:border-purple-400"
+                  className="flex-1 h-9 rounded-lg border border-[#333336] bg-[#0E0E11] px-3 text-xs text-white font-mono focus:outline-none focus:border-crimson-400"
                 />
                 <button
                   type="button"
                   disabled={checkingUpdate}
                   onClick={handleSaveUpdateConfig}
-                  className="h-9 rounded-lg bg-[#232B48] border border-[#344068] px-3.5 text-xs font-semibold text-white hover:bg-[#2C3659] disabled:opacity-50"
+                  className="h-9 rounded-lg bg-[#2B2B2E] border border-[#404043] px-3.5 text-xs font-semibold text-white hover:bg-[#363639] disabled:opacity-50"
                 >
                   Save & Check
                 </button>
@@ -2172,7 +2030,7 @@ function ProjectsContent() {
           </div>
 
           {/* Zero-Breakage Safety Guarantees */}
-          <div className="rounded-xl border border-[#252E4A] bg-[#0D111E] p-3.5 space-y-2">
+          <div className="rounded-xl border border-[#2E2E31] bg-[#111114] p-3.5 space-y-2">
             <div className="flex items-center gap-2 text-xs font-semibold text-emerald-300">
               <ShieldCheck className="h-4 w-4 shrink-0" />
               <span>Zero-Breakage Update Protection Active</span>
@@ -2226,7 +2084,7 @@ function ProjectsContent() {
             <button
               type="button"
               onClick={() => setUpdateModalOpen(false)}
-              className="rounded-lg border border-[#2B3350] bg-[#151A2C] px-4 py-2 text-xs font-semibold text-slate-200 hover:bg-[#1E253D]"
+              className="rounded-lg border border-[#333336] bg-[#1A1A1D] px-4 py-2 text-xs font-semibold text-slate-200 hover:bg-[#252528]"
             >
               Close
             </button>
@@ -2235,7 +2093,7 @@ function ProjectsContent() {
               type="button"
               disabled={installingUpdate}
               onClick={handleInstallUpdate}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-[#7C3AED] to-[#6D28D9] px-4 py-2 text-xs font-semibold text-white shadow-sm hover:from-[#8B5CF6] hover:to-[#7C3AED] disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-crimson-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-crimson-700 disabled:opacity-50"
             >
               {installingUpdate ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -2246,8 +2104,8 @@ function ProjectsContent() {
                 {installingUpdate
                   ? "Backing up & Installing..."
                   : updateReport?.update_available
-                  ? `Install v${updateReport.latest_version} Update Now`
-                  : "Verify & Snapshot Current Version"}
+                    ? `Install v${updateReport.latest_version} Update Now`
+                    : "Verify & Snapshot Current Version"}
               </span>
             </button>
           </div>

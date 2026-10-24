@@ -211,6 +211,7 @@ pub struct AppConfig {
     pub max_upload_bytes: usize,
     pub max_megapixels: u64,
     pub env_test_adapter: bool,
+    pub seed_examples: bool,
 }
 
 impl AppConfig {
@@ -250,6 +251,10 @@ impl AppConfig {
             .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
             .unwrap_or(false);
 
+        let seed_examples = std::env::var("DESIGN_GEN_SEED_EXAMPLES")
+            .map(|value| value != "0" && !value.eq_ignore_ascii_case("false"))
+            .unwrap_or(true);
+
         let csrf_token =
             std::env::var("DESIGN_GEN_CSRF_TOKEN").unwrap_or_else(|_| Uuid::new_v4().to_string());
 
@@ -263,6 +268,7 @@ impl AppConfig {
             max_upload_bytes: MAX_RASTER_UPLOAD_BYTES,
             max_megapixels: MAX_RASTER_MEGAPIXELS,
             env_test_adapter,
+            seed_examples,
         })
     }
 

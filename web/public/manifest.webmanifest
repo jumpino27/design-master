@@ -1,11 +1,11 @@
 {
-  "name": "Design Master — AI UI, Game HUD & Brand Workbench",
+  "name": "Design Master",
   "short_name": "Design Master",
-  "description": "Dark-mode AI design workbench for generating brand-consistent multi-page webapps, landing pages, Game UI/HUD components, vector SVGs, and interactive 3D object references with pure human-language coding-agent handoffs.",
+  "description": "Local UI mockups, reusable assets, and coding-agent handoffs.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#090A0F",
-  "theme_color": "#090A0F",
+  "background_color": "#0E0E10",
+  "theme_color": "#0E0E10",
   "icons": [
     {
       "src": "/icon-192.png",

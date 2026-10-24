@@ -27,3 +27,4 @@ Thumbs.db
 
 # TypeScript incremental build cache
 *.tsbuildinfo
+/web/.next-review/

@@ -77,11 +77,11 @@ export function FullPagePlanReview({
   }
 
   return (
-    <div className="rounded-xl border-2 border-burnt bg-stone-surface p-6 shadow-md space-y-5">
+    <div className="rounded-xl border-2 border-crimson-600 bg-stone-surface p-6 shadow-md space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-border pb-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-burnt/20 border border-burnt/40 px-2.5 py-0.5 text-xs font-semibold text-purple-200 mb-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-burnt" />
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-crimson-600/20 border border-crimson-600/40 px-2.5 py-0.5 text-xs font-semibold text-crimson-300 mb-1.5">
+            <Sparkles className="h-3.5 w-3.5 text-crimson-300" />
             <span>Full-Page Coordinated Set Plan Ready for Review</span>
           </div>
           <h2 className="text-lg font-bold text-stone-ink">
@@ -106,7 +106,7 @@ export function FullPagePlanReview({
             type="button"
             disabled={approving}
             onClick={handleGenerateSet}
-            className="inline-flex items-center gap-2 rounded-lg bg-burnt px-5 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-burnt-hover disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-crimson-600 px-5 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-crimson-700 disabled:opacity-50"
           >
             <Play className="h-3.5 w-3.5 fill-current" />
             <span>
@@ -129,7 +129,7 @@ export function FullPagePlanReview({
         {plan.page_composition.length > 0 && (
           <div className="rounded-lg border border-stone-border bg-white p-4 space-y-2">
             <div className="text-xs font-bold text-stone-ink flex items-center gap-1.5">
-              <Layers className="h-3.5 w-3.5 text-burnt" />
+              <Layers className="h-3.5 w-3.5 text-crimson-300" />
               <span>Pages, Routes & Section Order</span>
             </div>
             <div className="space-y-2">
@@ -164,7 +164,7 @@ export function FullPagePlanReview({
         {plan.shared_components.length > 0 && (
           <div className="rounded-lg border border-stone-border bg-white p-4 space-y-2">
             <div className="text-xs font-bold text-stone-ink flex items-center gap-1.5">
-              <GitBranch className="h-3.5 w-3.5 text-burnt" />
+              <GitBranch className="h-3.5 w-3.5 text-crimson-300" />
               <span>Shared Component Inventory & Reuse</span>
             </div>
             <div className="space-y-2">
@@ -207,7 +207,7 @@ export function FullPagePlanReview({
                     {item.kind}
                   </span>
                   {item.is_visual_anchor && (
-                    <span className="inline-flex items-center gap-1 rounded bg-burnt-light border border-burnt/30 px-2 py-0.5 text-[10px] font-semibold text-burnt">
+                    <span className="inline-flex items-center gap-1 rounded bg-crimson-950 border border-crimson-600/30 px-2 py-0.5 text-[10px] font-semibold text-crimson-300">
                       <CheckCircle2 className="h-3 w-3" />
                       Visual Anchor
                     </span>

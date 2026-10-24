@@ -22,13 +22,17 @@ Design Master combines a Next.js interface with a Rust/SQLite backend inside a T
 - Export DESIGN.md and implementation prompts for a coding agent.
 - Organize projects, threads, outputs, and assets in local folders.
 
-Includes Aetheris Chronicles and Jumpino View showcase projects. Generation quality and transparency depend on the selected model and output.
+Includes four finished showcases: Nexora, Elevate Studio, MetricFlow, and VYBE, with 23 rendered screens and extracted assets. Generation quality and transparency depend on the selected model and output.
+
+Starter suggestions send immediately. When a design brief needs clarification, the assistant asks one question with three choices and a custom-answer box. Each answer is sent immediately, and the assistant uses the conversation to decide whether another question is needed. Generation starts when the brief is clear.
 
 ## Screenshots
 
-![Jumpino View showcase workspace](docs/launch/jumpino-view-showcase.jpg)
+![Project library with four finished showcases](docs/launch/project-library.jpg)
 
-![Aetheris Chronicles HUD reference](docs/launch/aetheris-showcase.jpg)
+![Nexora design workspace](docs/launch/nexora-workspace.jpg)
+
+![Elevate Studio multi-page website](docs/launch/elevate-studio-workspace.jpg)
 
 ![DESIGN.md tokens and component specification](docs/launch/design-spec.jpg)
 
@@ -44,7 +48,7 @@ Download an installer from [GitHub Releases](https://github.com/jumpino27/design
 | Windows x64 | Setup `.exe`, portable `.zip` | WebView2, checked by the installer |
 | Linux x64 | `.deb`, `.AppImage`, `.run` | WebKit2GTK 4.1 and GTK3 |
 
-For Debian or Ubuntu, use `sudo apt install ./design-master_1.0.0_amd64.deb` so the package manager installs its dependencies. The `.run` installer installs under `~/.local` and requires those libraries to be present.
+For Debian or Ubuntu, use `sudo apt install ./design-master_1.1.0_amd64.deb` so the package manager installs its dependencies. The `.run` installer installs under `~/.local` and requires those libraries to be present.
 
 The macOS app is ad hoc signed and is not notarized. Windows packages are unsigned. OS security prompts may appear. Check downloads against the release's `SHA256SUMS.txt`.
 
@@ -62,6 +66,14 @@ Install Node.js 22 or later, pnpm 10, Rust stable, and the [Tauri prerequisites]
 pnpm install --frozen-lockfile
 pnpm dev
 ```
+
+To work in an empty local workspace without the built-in examples:
+
+```sh
+pnpm dev:creator
+```
+
+Open `http://localhost:3000`. This mode stores projects in `data/creator-workspace/` and skips automatic example creation. Existing workspaces stay on disk. Projects you create persist across restarts.
 
 To build the static frontend and native app, then package installers for the current OS:
 
@@ -86,6 +98,8 @@ pnpm test:web
 cargo test -p design-gen-server --locked
 cargo fmt --all -- --check
 ```
+
+After building the frontend and debug backend, `pnpm test:ui` checks dialog scrolling, keyboard dismissal, workspace navigation, and smaller window layouts in an isolated workspace. These checks make no generation calls.
 
 The integration tests use a deterministic provider adapter and do not make paid generation calls.
 

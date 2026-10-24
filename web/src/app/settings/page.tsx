@@ -443,15 +443,15 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={() => router.push("/setup")}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[#2E3652] bg-[#161B2C] px-3.5 py-1.5 text-xs font-semibold text-stone-100 hover:bg-[#20273F] hover:text-white transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[#363639] bg-[#1B1B1E] px-3.5 py-1.5 text-xs font-semibold text-stone-100 hover:bg-[#27272A] hover:text-white transition-colors"
           >
-            <Wand2 className="h-3.5 w-3.5 text-burnt" />
+            <Wand2 className="h-3.5 w-3.5 text-crimson-300" />
             <span>3-Step Setup Wizard</span>
           </button>
           <button
             type="button"
             onClick={() => router.push("/projects")}
-            className="rounded-lg bg-burnt px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-burnt-hover shadow-sm transition-colors"
+            className="rounded-lg bg-crimson-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-crimson-700 shadow-sm transition-colors"
           >
             Project Library
           </button>
@@ -478,7 +478,7 @@ export default function SettingsPage() {
         <section className="rounded-2xl border border-stone-border bg-stone-surface p-5 space-y-4 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
-              <div className="h-9 w-9 rounded-xl bg-burnt/15 border border-burnt/40 flex items-center justify-center text-burnt">
+              <div className="h-9 w-9 rounded-xl bg-crimson-600/15 border border-crimson-600/40 flex items-center justify-center text-crimson-300">
                 <BarChart3 className="h-5 w-5" />
               </div>
               <div>
@@ -504,8 +504,8 @@ export default function SettingsPage() {
 
               {usage?.openrouter_account &&
                 typeof usage.openrouter_account.usage_usd === "number" && (
-                  <div className="rounded-xl border border-burnt/40 bg-burnt/10 px-3.5 py-2 text-right">
-                    <div className="text-[10px] uppercase tracking-wider text-purple-200">
+                  <div className="rounded-xl border border-crimson-600/40 bg-crimson-600/10 px-3.5 py-2 text-right">
+                    <div className="text-[10px] uppercase tracking-wider text-crimson-300">
                       OpenRouter Key Total Usage
                     </div>
                     <div className="font-mono text-base font-bold text-white">
@@ -563,7 +563,7 @@ export default function SettingsPage() {
                         <div
                           className={`w-full max-w-[36px] rounded-t-md transition-all ${
                             day.spend_usd > 0
-                              ? "bg-gradient-to-t from-[#7C3AED] to-[#06B6D4] shadow-[0_0_12px_rgba(124,58,237,0.4)]"
+                              ? "bg-gradient-to-t from-[#C92746] to-[#FFA2B2] shadow-[0_0_12px_rgba(201,39,70,0.4)]"
                               : "bg-stone-border/50"
                           }`}
                           style={{ height: `${pct}%` }}
@@ -644,7 +644,7 @@ export default function SettingsPage() {
           <section className="rounded-2xl border border-stone-border bg-stone-surface p-5 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <KeyRound className="h-4 w-4 text-burnt" />
+                <KeyRound className="h-4 w-4 text-crimson-300" />
                 <h2 className="text-sm font-bold text-stone-ink">
                   OpenRouter API Key
                 </h2>
@@ -675,7 +675,7 @@ export default function SettingsPage() {
                 type="button"
                 onClick={() => handleUpdateKey(false)}
                 disabled={!apiKeyInput.trim()}
-                className="rounded-lg bg-burnt px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-burnt-hover disabled:opacity-50"
+                className="rounded-lg bg-crimson-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-crimson-700 disabled:opacity-50"
               >
                 Save Key
               </button>
@@ -706,7 +706,7 @@ export default function SettingsPage() {
                 type="checkbox"
                 checked={preferSession}
                 onChange={(e) => setPreferSession(e.target.checked)}
-                className="rounded border-stone-border text-burnt"
+                className="rounded border-stone-border text-crimson-300"
               />
               <span>
                 Store in session memory only (cleared when server exits)
@@ -718,7 +718,7 @@ export default function SettingsPage() {
           <section className="rounded-2xl border border-stone-border bg-stone-surface p-5 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Database className="h-4 w-4 text-burnt" />
+                <Database className="h-4 w-4 text-crimson-300" />
                 <h2 className="text-sm font-bold text-stone-ink">
                   Organized Projects & Threads Storage Path
                 </h2>
@@ -747,7 +747,7 @@ export default function SettingsPage() {
                 type="button"
                 disabled={pickingFolder}
                 onClick={handlePickNativeFolder}
-                className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-burnt px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-burnt-hover disabled:opacity-50 shrink-0"
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-crimson-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-crimson-700 disabled:opacity-50 shrink-0"
               >
                 <FolderOpen className="h-3.5 w-3.5" />
                 <span>
@@ -768,7 +768,7 @@ export default function SettingsPage() {
         <section className="rounded-2xl border border-stone-border bg-stone-surface p-5 space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-burnt" />
+              <DollarSign className="h-4 w-4 text-crimson-300" />
               <h2 className="text-sm font-bold text-stone-ink">
                 Image Generation Quality Tiers & Per-Image Pricing
               </h2>
@@ -791,8 +791,8 @@ export default function SettingsPage() {
                   onClick={() => setDefaultQuality(tier.id)}
                   className={`text-left rounded-xl border p-3.5 transition flex flex-col justify-between gap-2 ${
                     isSelected
-                      ? "border-burnt bg-burnt/15 shadow-[0_0_20px_rgba(124,58,237,0.2)]"
-                      : "border-stone-border bg-stone-canvas hover:border-burnt/50"
+                      ? "border-crimson-600 bg-crimson-600/15 shadow-[0_0_20px_rgba(201,39,70,0.2)]"
+                      : "border-stone-border bg-stone-canvas hover:border-crimson-600/50"
                   }`}
                 >
                   <div>
@@ -803,7 +803,7 @@ export default function SettingsPage() {
                       <span
                         className={`rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase ${
                           isSelected
-                            ? "bg-burnt text-white"
+                            ? "bg-crimson-600 text-white"
                             : "bg-stone-surface text-stone-muted border border-stone-border"
                         }`}
                       >
@@ -835,7 +835,7 @@ export default function SettingsPage() {
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <Sliders className="h-4 w-4 text-burnt" />
+              <Sliders className="h-4 w-4 text-crimson-300" />
               <div>
                 <h2 className="text-sm font-bold text-stone-ink">
                   OpenRouter Models, Live Price Discovery & Concurrent Image
@@ -853,9 +853,9 @@ export default function SettingsPage() {
                 type="button"
                 onClick={handleTestModels}
                 disabled={testingModels}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-burnt/50 bg-burnt/20 px-3 py-1.5 text-xs font-semibold text-purple-200 hover:bg-burnt/30"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-crimson-600/50 bg-crimson-600/20 px-3 py-1.5 text-xs font-semibold text-crimson-300 hover:bg-crimson-600/30"
               >
-                <Sparkles className="h-3.5 w-3.5 text-burnt" />
+                <Sparkles className="h-3.5 w-3.5 text-crimson-300" />
                 <span>
                   {testingModels
                     ? "Verifying on OpenRouter..."
@@ -1064,7 +1064,7 @@ export default function SettingsPage() {
           {/* Clear Explanation of Concurrent Image Jobs */}
           <div className="rounded-xl border border-stone-border bg-stone-canvas p-3.5 text-xs space-y-1">
             <div className="font-semibold text-stone-ink flex items-center gap-1.5">
-              <Layers className="h-3.5 w-3.5 text-burnt" />
+              <Layers className="h-3.5 w-3.5 text-crimson-300" />
               <span>How Concurrent Image Jobs Work in Design Master</span>
             </div>
             <p className="text-[11px] text-stone-muted leading-relaxed">
@@ -1106,7 +1106,7 @@ export default function SettingsPage() {
                   type="checkbox"
                   checked={includeExtraction}
                   onChange={(e) => setIncludeExtraction(e.target.checked)}
-                  className="rounded border-stone-border text-burnt"
+                  className="rounded border-stone-border text-crimson-300"
                 />
                 <span>
                   Include{" "}
@@ -1122,7 +1122,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-end pt-2">
             <button
               type="submit"
-              className="inline-flex items-center gap-1.5 rounded-xl bg-burnt px-5 py-2.5 text-xs font-bold text-white hover:bg-burnt-hover shadow-sm"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-crimson-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-crimson-700 shadow-sm"
             >
               <Save className="h-3.5 w-3.5" />
               <span>Save All Settings</span>

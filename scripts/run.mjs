@@ -44,6 +44,12 @@ async function waitForUrl(url, timeoutMs = 20000) {
 async function main() {
   const mode = process.argv[2] || "dev";
   const webOnly = process.argv.includes("--web");
+  const noExamples = process.argv.includes("--no-examples");
+  const env = { ...process.env };
+  if (noExamples) {
+    env.DESIGN_GEN_SEED_EXAMPLES = "0";
+    env.DESIGN_GEN_DATA_DIR ||= path.join(rootDir, "data", "creator-workspace");
+  }
 
   if (mode === "build") {
     console.log("==> Generating Tauri & OS icons...");
@@ -116,40 +122,44 @@ async function main() {
   }
 
   if (mode === "dev") {
-    console.log("==> Starting Design Master (DM) Next.js dev server + Native Tauri Desktop App (with embedded Rust backend)...");
+    console.log(webOnly
+      ? "==> Starting Design Master at http://localhost:3000..."
+      : "==> Starting Design Master with the native desktop app...");
     const webProc = spawn(pnpmCmd, ["--dir", "web", "dev"], {
       cwd: rootDir,
       stdio: "inherit",
       shell: isWin,
-      env: process.env,
+      env,
     });
 
     await waitForUrl("http://localhost:3000", 15000);
 
     const tauriBinName = isWin ? "design-master.exe" : "design-master";
     const releaseTauriBin = path.join(rootDir, "target", "release", tauriBinName);
-    const tauriCmd = fs.existsSync(releaseTauriBin) ? releaseTauriBin : cargoCmd;
-    const tauriArgs = fs.existsSync(releaseTauriBin)
-      ? []
-      : ["run", "--bin", "design-master"];
+    let appCommand = cargoCmd;
+    let appArgs = ["run", "--bin", webOnly ? "design-gen-server" : "design-master"];
+    if (!webOnly && fs.existsSync(releaseTauriBin)) {
+      appCommand = releaseTauriBin;
+      appArgs = [];
+    }
 
-    const tauriProc = spawn(tauriCmd, tauriArgs, {
+    const appProc = spawn(appCommand, appArgs, {
       cwd: rootDir,
       stdio: "inherit",
-      shell: isWin && tauriCmd === cargoCmd,
+      shell: isWin && appCommand === cargoCmd,
       env: {
-        ...process.env,
+        ...env,
         DESIGN_MASTER_USE_DEV_SERVER: "1",
       },
     });
 
     const shutdown = () => {
-      tauriProc.kill("SIGINT");
+      appProc.kill("SIGINT");
       webProc.kill("SIGINT");
       process.exit(0);
     };
 
-    tauriProc.on("exit", () => {
+    appProc.on("exit", () => {
       webProc.kill("SIGINT");
       process.exit(0);
     });

@@ -52,7 +52,7 @@ export function DetailsDrawer({
         {/* 1. Models, Context & Cost Summary */}
         <section className="rounded-lg border border-stone-border bg-white p-4 space-y-2">
           <div className="flex items-center gap-2 font-bold text-stone-ink">
-            <Cpu className="h-4 w-4 text-burnt" />
+            <Cpu className="h-4 w-4 text-crimson-300" />
             <span>Models, Capabilities & Cost Accounting</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
@@ -113,7 +113,7 @@ export function DetailsDrawer({
         {/* 2. Selected Reference Roles & Input Resizing Diagnostics */}
         <section className="rounded-lg border border-stone-border bg-white p-4 space-y-2">
           <div className="flex items-center gap-2 font-bold text-stone-ink">
-            <Layers className="h-4 w-4 text-burnt" />
+            <Layers className="h-4 w-4 text-crimson-300" />
             <span>
               Selected Reference Roles & Input Derivatives (
               {run.selected_references.length})
@@ -176,7 +176,7 @@ export function DetailsDrawer({
         {/* 3. Compiled Image Prompts & Output Diagnostics */}
         <section className="rounded-lg border border-stone-border bg-white p-4 space-y-3">
           <div className="flex items-center gap-2 font-bold text-stone-ink">
-            <Code2 className="h-4 w-4 text-burnt" />
+            <Code2 className="h-4 w-4 text-crimson-300" />
             <span>Compiled Image Prompts & Output Metadata</span>
           </div>
           <div className="space-y-3">
@@ -215,7 +215,7 @@ export function DetailsDrawer({
           <section className="rounded-lg border border-stone-border bg-white p-4 space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2 font-bold text-stone-ink">
-                <ShieldCheck className="h-4 w-4 text-burnt" />
+                <ShieldCheck className="h-4 w-4 text-crimson-300" />
                 <span>Visual Consistency Audit & Brand Token Actions</span>
               </div>
               <div className="flex items-center gap-2">
@@ -245,7 +245,7 @@ export function DetailsDrawer({
                     className="inline-flex items-center gap-1.5 rounded-lg border border-stone-border bg-stone-surface px-3 py-1.5 text-[11px] font-semibold text-stone-ink hover:bg-stone-canvas disabled:opacity-50"
                     title="Save the AI planner's colors & typography from this run into a new Brand Kit version"
                   >
-                    <Sparkles className="h-3.5 w-3.5 text-burnt" />
+                    <Sparkles className="h-3.5 w-3.5 text-crimson-300" />
                     <span>
                       {adoptingTokens ? "Adopting..." : "Adopt Run Tokens"}
                     </span>
@@ -315,7 +315,7 @@ export function DetailsDrawer({
         {/* 5. Structured Planner Output & Immutable Brand Snapshot */}
         <section className="rounded-lg border border-stone-border bg-white p-4 space-y-3">
           <div className="flex items-center gap-2 font-bold text-stone-ink">
-            <FileSpreadsheet className="h-4 w-4 text-burnt" />
+            <FileSpreadsheet className="h-4 w-4 text-crimson-300" />
             <span>Structured Planner Schema & Immutable Brand Snapshot</span>
           </div>
           <details className="rounded border border-stone-border bg-stone-surface p-3">

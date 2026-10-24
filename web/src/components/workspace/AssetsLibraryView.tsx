@@ -43,7 +43,7 @@ const ROLE_CONFIGS: RoleConfig[] = [
     title: "Include Asset in Design",
     description:
       "Product photo, 3D illustration, icon, or graphic that the AI must incorporate into the generated visual.",
-    badgeColor: "bg-burnt/15 text-burnt border-burnt/30",
+    badgeColor: "bg-crimson-600/15 text-crimson-300 border-crimson-600/30",
   },
   {
     role: "brand_logo",
@@ -59,7 +59,7 @@ const ROLE_CONFIGS: RoleConfig[] = [
     title: "Current UI Screenshot (Polish & Extend)",
     description:
       "Screenshot of an existing navbar, hero, or page so the AI knows what buttons/elements exist and can polish or add features.",
-    badgeColor: "bg-blue-500/15 text-blue-800 border-blue-500/30",
+    badgeColor: "bg-crimson-500/15 text-crimson-300 border-crimson-500/30",
   },
   {
     role: "style_reference",
@@ -67,7 +67,7 @@ const ROLE_CONFIGS: RoleConfig[] = [
     title: "Style & Aesthetic Reference",
     description:
       "Visual inspiration for lighting, textures, surface craft, or color mood without copying exact content.",
-    badgeColor: "bg-purple-500/15 text-purple-800 border-purple-500/30",
+    badgeColor: "bg-crimson-500/15 text-crimson-300 border-crimson-500/30",
   },
   {
     role: "content_reference",
@@ -246,7 +246,7 @@ export function AssetsLibraryView({
             <h1 className="text-2xl font-bold text-stone-ink">
               Project Assets & Reference Studio
             </h1>
-            <span className="rounded-full bg-burnt/15 border border-burnt/30 px-2.5 py-0.5 text-xs font-bold text-burnt">
+            <span className="rounded-full bg-crimson-600/15 border border-crimson-600/30 px-2.5 py-0.5 text-xs font-bold text-crimson-300">
               {assets.length} {assets.length === 1 ? "Asset" : "Assets"}
             </span>
           </div>
@@ -264,7 +264,7 @@ export function AssetsLibraryView({
       <div className="rounded-2xl border border-stone-border bg-stone-surface p-5 shadow-card space-y-5">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-burnt/15 text-burnt">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-crimson-600/15 text-crimson-300">
               <Upload className="h-4 w-4" />
             </span>
             <div>
@@ -302,8 +302,8 @@ export function AssetsLibraryView({
                   }}
                   className={`rounded-xl border px-3.5 py-2 text-xs font-semibold transition-all text-left ${
                     isSelected
-                      ? "border-burnt bg-charcoal text-white shadow-sm"
-                      : "border-stone-border bg-white text-stone-ink hover:border-burnt/60"
+                      ? "border-crimson-600 bg-charcoal text-white shadow-sm"
+                      : "border-stone-border bg-white text-stone-ink hover:border-crimson-600/60"
                   }`}
                 >
                   {rc.shortLabel}
@@ -329,7 +329,7 @@ export function AssetsLibraryView({
               placeholder="e.g., 'Place this glossy 3D phone mockup on the right side of the Hero section', or 'Use this current Navbar screenshot and add a glassy Sign Up button on the right'..."
               value={uploadNotes}
               onChange={(e) => setUploadNotes(e.target.value)}
-              className="w-full rounded-xl border border-stone-border bg-white p-2.5 text-xs text-stone-ink placeholder:text-stone-muted focus:border-burnt focus:outline-none"
+              className="w-full rounded-xl border border-stone-border bg-white p-2.5 text-xs text-stone-ink placeholder:text-stone-muted focus:border-crimson-600 focus:outline-none"
             />
           </div>
 
@@ -343,7 +343,7 @@ export function AssetsLibraryView({
                 placeholder="Defaults to filename..."
                 value={uploadLabel}
                 onChange={(e) => setUploadLabel(e.target.value)}
-                className="w-full rounded-xl border border-stone-border bg-white px-3 py-2 text-xs text-stone-ink placeholder:text-stone-muted focus:border-burnt focus:outline-none"
+                className="w-full rounded-xl border border-stone-border bg-white px-3 py-2 text-xs text-stone-ink placeholder:text-stone-muted focus:border-crimson-600 focus:outline-none"
               />
             </div>
 
@@ -352,7 +352,7 @@ export function AssetsLibraryView({
                 type="checkbox"
                 checked={preserveAsIs}
                 onChange={(e) => setPreserveAsIs(e.target.checked)}
-                className="h-3.5 w-3.5 rounded border-stone-border text-burnt focus:ring-burnt"
+                className="h-3.5 w-3.5 rounded border-stone-border text-crimson-300 focus:ring-crimson-600"
               />
               <span>Include original file in Coding-Agent Handoff</span>
             </label>
@@ -375,13 +375,13 @@ export function AssetsLibraryView({
           }}
           className={`flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border-2 border-dashed p-4 transition-colors ${
             isDraggingOver
-              ? "border-burnt bg-burnt/10"
-              : "border-stone-border bg-white hover:border-burnt/50"
+              ? "border-crimson-600 bg-crimson-600/10"
+              : "border-stone-border bg-white hover:border-crimson-600/50"
           }`}
         >
           <div className="flex items-center gap-3 text-xs">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-stone-canvas text-stone-ink border border-stone-border">
-              <FileImage className="h-5 w-5 text-burnt" />
+              <FileImage className="h-5 w-5 text-crimson-300" />
             </div>
             <div>
               <div className="font-bold text-stone-ink">
@@ -394,7 +394,7 @@ export function AssetsLibraryView({
             </div>
           </div>
 
-          <label className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-burnt px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-burnt-hover cursor-pointer transition-colors">
+          <label className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-crimson-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-crimson-700 cursor-pointer transition-colors">
             <Upload className="h-4 w-4" />
             <span>
               {uploading ? "Uploading & Validating..." : "Choose File(s)"}
@@ -522,7 +522,7 @@ export function AssetsLibraryView({
                   {/* Image Preview Header */}
                   <div
                     onClick={() => setPreviewAsset(asset)}
-                    className="group relative h-44 bg-[#0C0F1A] border-b border-stone-border flex items-center justify-center p-3 checkerboard-bg cursor-pointer overflow-hidden"
+                    className="group relative h-44 bg-[#0F0F12] border-b border-stone-border flex items-center justify-center p-3 checkerboard-bg cursor-pointer overflow-hidden"
                   >
                     <img
                       src={asset.thumbnail_url}
@@ -546,7 +546,7 @@ export function AssetsLibraryView({
                     {/* Hover Fullscreen Inspect Pill */}
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute inset-0 bg-charcoal/25 flex items-center justify-center">
                       <span className="inline-flex items-center gap-1.5 rounded-lg bg-charcoal/90 px-3 py-1.5 text-xs font-semibold text-white shadow">
-                        <Eye className="h-3.5 w-3.5 text-burnt" />
+                        <Eye className="h-3.5 w-3.5 text-crimson-300" />
                         Inspect Asset
                       </span>
                     </div>
@@ -575,7 +575,7 @@ export function AssetsLibraryView({
                             });
                           }
                         }}
-                        className="w-full rounded-lg border border-transparent hover:border-stone-border focus:border-burnt bg-transparent focus:bg-[#101524] px-1.5 py-0.5 text-xs font-bold text-white focus:outline-none transition-colors"
+                        className="w-full rounded-lg border border-transparent hover:border-stone-border focus:border-crimson-600 bg-transparent focus:bg-[#151518] px-1.5 py-0.5 text-xs font-bold text-white focus:outline-none transition-colors"
                         title="Click to rename asset"
                       />
                     </div>
@@ -632,7 +632,7 @@ export function AssetsLibraryView({
                           }))
                         }
                         placeholder="Add a comment so the AI knows what this asset is or where to place it..."
-                        className="w-full rounded-xl border border-stone-border bg-white p-2 text-xs text-stone-ink placeholder:text-stone-muted focus:border-burnt focus:outline-none"
+                        className="w-full rounded-xl border border-stone-border bg-white p-2 text-xs text-stone-ink placeholder:text-stone-muted focus:border-crimson-600 focus:outline-none"
                       />
                       {hasUnsavedChanges && (
                         <div className="mt-1.5 flex justify-end">
@@ -640,7 +640,7 @@ export function AssetsLibraryView({
                             type="button"
                             disabled={savingAssetId === asset.id}
                             onClick={() => handleSaveAssetDetails(asset)}
-                            className="inline-flex items-center gap-1 rounded-lg bg-burnt px-2.5 py-1 text-[11px] font-bold text-white shadow-sm hover:bg-burnt-hover disabled:opacity-50"
+                            className="inline-flex items-center gap-1 rounded-lg bg-crimson-600 px-2.5 py-1 text-[11px] font-bold text-white shadow-sm hover:bg-crimson-700 disabled:opacity-50"
                           >
                             <Save className="h-3 w-3" />
                             <span>
@@ -663,7 +663,7 @@ export function AssetsLibraryView({
                             preserve_as_is: e.target.checked,
                           })
                         }
-                        className="rounded border-stone-border text-burnt focus:ring-burnt"
+                        className="rounded border-stone-border text-crimson-300 focus:ring-crimson-600"
                       />
                       <span>Preserve exact file in coding-agent handoff</span>
                     </label>
@@ -687,7 +687,7 @@ export function AssetsLibraryView({
                     onClick={() => onAttachToComposer(asset)}
                     className="inline-flex items-center gap-1.5 rounded-xl bg-charcoal px-3.5 py-1.5 text-xs font-bold text-white hover:bg-charcoal-hover transition-colors shadow-sm"
                   >
-                    <MessageSquarePlus className="h-3.5 w-3.5 text-burnt" />
+                    <MessageSquarePlus className="h-3.5 w-3.5 text-crimson-300" />
                     <span>Attach to Chat</span>
                   </button>
                 </div>
@@ -712,7 +712,7 @@ export function AssetsLibraryView({
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-bold">{previewAsset.label}</h3>
-                <p className="text-xs text-white/60">
+                <p className="text-xs text-stone-muted">
                   {getRoleConfig(previewAsset.role).title} ·{" "}
                   {previewAsset.width}×{previewAsset.height}px
                 </p>
@@ -734,7 +734,7 @@ export function AssetsLibraryView({
             </div>
             {previewAsset.placement_notes && (
               <div className="rounded-xl bg-white/5 border border-white/10 p-3 text-xs text-white/85">
-                <strong className="text-burnt">AI Comment / Notes:</strong>{" "}
+                <strong className="text-crimson-300">AI Comment / Notes:</strong>{" "}
                 {previewAsset.placement_notes}
               </div>
             )}

@@ -8,7 +8,7 @@ Ko-fi: https://ko-fi.com/designmasterdm
 
 The owner must publish this personally. [HN's guidelines](https://news.ycombinator.com/newsguidelines.html) prohibit generated text and automated posting. No post or HN account has been created by this agent.
 
-Use [the submission page](https://news.ycombinator.com/submit) and write an original title and explanation. The title should begin with `Show HN`. Link directly to the repository. Useful facts to cover in your own words are the local Tauri/Rust architecture, BYOK generation costs, brand rules and handoff exports, and the two runnable showcase examples.
+Use [the submission page](https://news.ycombinator.com/submit) and write an original title and explanation. The title should begin with `Show HN`. Link directly to the repository. Useful facts to cover in your own words are the local Tauri/Rust architecture, BYOK generation costs, brand rules and handoff exports, and the four runnable showcase examples.
 
 ## Product Hunt
 
@@ -22,7 +22,7 @@ An open-source desktop workbench for turning brand rules and reference images in
 
 Maker comment:
 
-I built Design Master to keep the design-to-implementation brief together: brand tokens, reference images, generated screens, extracted assets, and the instructions a coding agent needs. It stores projects locally and runs in a native Tauri app. The source is MIT licensed, and two built-in showcases let you inspect the workflow before making paid generation calls. I would welcome feedback on the handoff format and the boundary between reusable assets and UI elements that should be built in code.
+I built Design Master to keep the design-to-implementation brief together: brand tokens, reference images, generated screens, extracted assets, and the instructions a coding agent needs. It stores projects locally and runs in a native Tauri app. The source is MIT licensed, and four built-in showcases let you inspect the workflow before making paid generation calls. I would welcome feedback on the handoff format and the boundary between reusable assets and UI elements that should be built in code.
 
 Scheduled for 25 October 2026 at 08:01 Europe/Rome.
 

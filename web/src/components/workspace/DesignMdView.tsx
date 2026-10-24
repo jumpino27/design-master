@@ -91,10 +91,10 @@ export function DesignMdView({
       className="mx-auto max-w-6xl space-y-6 pb-16 text-stone-100"
     >
       {/* Top Header & Export Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#28304A] bg-[#111522] p-5 shadow-lg">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#303033] bg-[#151518] p-5 shadow-lg">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-burnt/20 border border-burnt/40 text-burnt">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-crimson-600/20 border border-crimson-600/40 text-crimson-300">
               <FileCode2 className="h-4 w-4" />
             </span>
             <h1 className="font-heading text-xl font-bold text-white">
@@ -121,13 +121,13 @@ export function DesignMdView({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <div className="inline-flex rounded-xl border border-[#28304A] bg-[#0B0D14] p-1">
+          <div className="inline-flex rounded-xl border border-[#303033] bg-[#0D0D10] p-1">
             <button
               type="button"
               onClick={() => setActiveSubView("visual_and_md")}
               className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
                 activeSubView === "visual_and_md"
-                  ? "bg-burnt text-white shadow-sm"
+                  ? "bg-crimson-600 text-white shadow-sm"
                   : "text-stone-300 hover:text-white"
               }`}
             >
@@ -139,7 +139,7 @@ export function DesignMdView({
               onClick={() => setActiveSubView("editor")}
               className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
                 activeSubView === "editor"
-                  ? "bg-burnt text-white shadow-sm"
+                  ? "bg-crimson-600 text-white shadow-sm"
                   : "text-stone-300 hover:text-white"
               }`}
             >
@@ -152,7 +152,7 @@ export function DesignMdView({
             <button
               type="button"
               onClick={onOpenBrandEditor}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-[#2E3856] bg-[#161B2E] px-3.5 py-2 text-xs font-semibold text-stone-100 hover:border-burnt hover:text-white transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[#38383B] bg-[#1B1B1E] px-3.5 py-2 text-xs font-semibold text-stone-100 hover:border-crimson-600 hover:text-white transition-colors"
             >
               <Palette className="h-3.5 w-3.5 text-amber-300" />
               <span>Customize Tokens & Fonts</span>
@@ -163,7 +163,7 @@ export function DesignMdView({
             type="button"
             data-testid="copy-design-md-btn"
             onClick={handleCopyMd}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-burnt/60 bg-[#1F1A3A] px-3.5 py-2 text-xs font-semibold text-white hover:bg-burnt transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-crimson-600/60 bg-[#1D1D20] px-3.5 py-2 text-xs font-semibold text-white hover:bg-crimson-600 transition-colors"
           >
             {copied ? (
               <>
@@ -182,7 +182,7 @@ export function DesignMdView({
             type="button"
             data-testid="download-design-md-btn"
             onClick={handleDownloadMd}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#06B6D4] px-4 py-2 text-xs font-bold text-white shadow-md hover:opacity-95 transition-opacity"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-crimson-600 hover:bg-crimson-700 px-4 py-2 text-xs font-bold text-white shadow-md hover:opacity-95 transition-opacity"
           >
             <Download className="h-3.5 w-3.5" />
             <span>Export DESIGN.md (.md)</span>
@@ -194,7 +194,7 @@ export function DesignMdView({
         <>
           {/* 1. Chosen Style & Atmosphere Card */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <div className="lg:col-span-2 rounded-2xl border border-[#28304A] bg-[#111522] p-5 space-y-3">
+            <div className="lg:col-span-2 rounded-2xl border border-[#303033] bg-[#151518] p-5 space-y-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-amber-300" />
@@ -202,7 +202,7 @@ export function DesignMdView({
                     1. Visual Theme & Style Direction
                   </h2>
                 </div>
-                <span className="rounded-lg bg-[#1A2035] border border-[#2E3856] px-2.5 py-1 font-mono text-xs font-bold text-white">
+                <span className="rounded-lg bg-[#202023] border border-[#38383B] px-2.5 py-1 font-mono text-xs font-bold text-white">
                   {ds?.style_name
                     ? `#${ds.style_number || 1} ${ds.style_name}`
                     : brand.brand_personality}
@@ -212,7 +212,7 @@ export function DesignMdView({
                 {ds?.definition || brand.design_direction}
               </p>
               {ds?.visual_rules && (
-                <div className="rounded-xl border border-[#252D47] bg-[#0B0E17] p-3 text-xs text-stone-200 leading-relaxed">
+                <div className="rounded-xl border border-[#2D2D30] bg-[#0E0E11] p-3 text-xs text-stone-200 leading-relaxed">
                   <span className="font-semibold text-amber-200">
                     System Visual Rules:{" "}
                   </span>
@@ -220,15 +220,15 @@ export function DesignMdView({
                 </div>
               )}
               <div className="flex flex-wrap gap-2 pt-1 text-[11px]">
-                <span className="rounded-md bg-[#171C2E] border border-[#28304A] px-2.5 py-1 text-stone-200">
+                <span className="rounded-md bg-[#1C1C1F] border border-[#303033] px-2.5 py-1 text-stone-200">
                   <strong className="text-white">Tone:</strong>{" "}
                   {brand.tone_of_voice}
                 </span>
-                <span className="rounded-md bg-[#171C2E] border border-[#28304A] px-2.5 py-1 text-stone-200">
+                <span className="rounded-md bg-[#1C1C1F] border border-[#303033] px-2.5 py-1 text-stone-200">
                   <strong className="text-white">UI Density:</strong>{" "}
                   {brand.ui_density}
                 </span>
-                <span className="rounded-md bg-[#171C2E] border border-[#28304A] px-2.5 py-1 text-stone-200">
+                <span className="rounded-md bg-[#1C1C1F] border border-[#303033] px-2.5 py-1 text-stone-200">
                   <strong className="text-white">Target Stack:</strong>{" "}
                   {brand.target_context.target_stack || "React / Next.js / Tailwind"}
                 </span>
@@ -236,15 +236,15 @@ export function DesignMdView({
             </div>
 
             {/* Typography Hierarchy Summary */}
-            <div className="rounded-2xl border border-[#28304A] bg-[#111522] p-5 space-y-3">
+            <div className="rounded-2xl border border-[#303033] bg-[#151518] p-5 space-y-3">
               <div className="flex items-center gap-2">
-                <Type className="h-4 w-4 text-cyan-300" />
-                <h2 className="font-heading text-sm font-bold uppercase tracking-wider text-cyan-200">
+                <Type className="h-4 w-4 text-crimson-300" />
+                <h2 className="font-heading text-sm font-bold uppercase tracking-wider text-crimson-300">
                   2. Typography System (/typeset)
                 </h2>
               </div>
               <div className="space-y-2.5 text-xs">
-                <div className="rounded-xl border border-[#252D47] bg-[#0B0E17] p-3">
+                <div className="rounded-xl border border-[#2D2D30] bg-[#0E0E11] p-3">
                   <div className="text-[10px] uppercase tracking-wider text-stone-400">
                     Heading / Display Font
                   </div>
@@ -255,7 +255,7 @@ export function DesignMdView({
                     Tracking: -0.03em · Leading: 1.12
                   </div>
                 </div>
-                <div className="rounded-xl border border-[#252D47] bg-[#0B0E17] p-3">
+                <div className="rounded-xl border border-[#2D2D30] bg-[#0E0E11] p-3">
                   <div className="text-[10px] uppercase tracking-wider text-stone-400">
                     Body / UI Font
                   </div>
@@ -266,7 +266,7 @@ export function DesignMdView({
                     Leading: 1.60 · Measure: 65ch max
                   </div>
                 </div>
-                <div className="rounded-xl border border-[#252D47] bg-[#0B0E17] p-3">
+                <div className="rounded-xl border border-[#2D2D30] bg-[#0E0E11] p-3">
                   <div className="text-[10px] uppercase tracking-wider text-stone-400">
                     Monospace & Tabular Metrics
                   </div>
@@ -279,11 +279,11 @@ export function DesignMdView({
           </div>
 
           {/* 2. Component Color Allocation Preview (Navbar, Buttons, Cards, Surfaces) */}
-          <div className="rounded-2xl border border-[#28304A] bg-[#111522] p-5 space-y-5">
+          <div className="rounded-2xl border border-[#303033] bg-[#151518] p-5 space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <Layout className="h-4 w-4 text-purple-300" />
-                <h2 className="font-heading text-sm font-bold uppercase tracking-wider text-purple-200">
+                <Layout className="h-4 w-4 text-crimson-300" />
+                <h2 className="font-heading text-sm font-bold uppercase tracking-wider text-crimson-300">
                   3. Component Color Allocation & Live Specimen (Navbar, Buttons, Cards & Surfaces)
                 </h2>
               </div>
@@ -356,7 +356,7 @@ export function DesignMdView({
 
             {/* Live Button Palette Specimen */}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-xl border border-[#252D47] bg-[#0B0E17] p-3.5 space-y-2.5">
+              <div className="rounded-xl border border-[#2D2D30] bg-[#0E0E11] p-3.5 space-y-2.5">
                 <div className="text-[11px] font-semibold text-white">
                   Primary Action Button
                 </div>
@@ -378,7 +378,7 @@ export function DesignMdView({
                 </div>
               </div>
 
-              <div className="rounded-xl border border-[#252D47] bg-[#0B0E17] p-3.5 space-y-2.5">
+              <div className="rounded-xl border border-[#2D2D30] bg-[#0E0E11] p-3.5 space-y-2.5">
                 <div className="text-[11px] font-semibold text-white">
                   Secondary / Outline Button
                 </div>
@@ -400,7 +400,7 @@ export function DesignMdView({
                 </div>
               </div>
 
-              <div className="rounded-xl border border-[#252D47] bg-[#0B0E17] p-3.5 space-y-2.5">
+              <div className="rounded-xl border border-[#2D2D30] bg-[#0E0E11] p-3.5 space-y-2.5">
                 <div className="text-[11px] font-semibold text-white">
                   Ghost / Toolbar Button
                 </div>
@@ -422,7 +422,7 @@ export function DesignMdView({
                 </div>
               </div>
 
-              <div className="rounded-xl border border-[#252D47] bg-[#0B0E17] p-3.5 space-y-2.5">
+              <div className="rounded-xl border border-[#2D2D30] bg-[#0E0E11] p-3.5 space-y-2.5">
                 <div className="text-[11px] font-semibold text-white">
                   Destructive / Alert Button
                 </div>
@@ -447,7 +447,7 @@ export function DesignMdView({
 
             {/* Dark & Light Swatch Grid */}
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-              <div className="rounded-xl border border-[#252D47] bg-[#0B0E17] p-4 space-y-3">
+              <div className="rounded-xl border border-[#2D2D30] bg-[#0E0E11] p-4 space-y-3">
                 <div className="text-xs font-bold text-white">
                   Dark Mode Semantic Tokens (Primary Studio Polarity)
                 </div>
@@ -455,7 +455,7 @@ export function DesignMdView({
                   {Object.entries(d).map(([key, hex]) => (
                     <div
                       key={`dark-${key}`}
-                      className="rounded-lg border border-[#28304A] bg-[#141829] p-2 space-y-1.5"
+                      className="rounded-lg border border-[#303033] bg-[#18181B] p-2 space-y-1.5"
                     >
                       <div
                         className="h-7 w-full rounded border border-white/15"
@@ -472,7 +472,7 @@ export function DesignMdView({
                 </div>
               </div>
 
-              <div className="rounded-xl border border-[#252D47] bg-[#0B0E17] p-4 space-y-3">
+              <div className="rounded-xl border border-[#2D2D30] bg-[#0E0E11] p-4 space-y-3">
                 <div className="text-xs font-bold text-white">
                   Light Mode Semantic Tokens
                 </div>
@@ -480,7 +480,7 @@ export function DesignMdView({
                   {Object.entries(l).map(([key, hex]) => (
                     <div
                       key={`light-${key}`}
-                      className="rounded-lg border border-[#28304A] bg-[#141829] p-2 space-y-1.5"
+                      className="rounded-lg border border-[#303033] bg-[#18181B] p-2 space-y-1.5"
                     >
                       <div
                         className="h-7 w-full rounded border border-white/15"
@@ -489,7 +489,7 @@ export function DesignMdView({
                       <div className="truncate text-[10px] font-semibold text-white">
                         {key}
                       </div>
-                      <div className="font-mono text-[10px] text-cyan-200">
+                      <div className="font-mono text-[10px] text-crimson-300">
                         {hex}
                       </div>
                     </div>
@@ -500,7 +500,7 @@ export function DesignMdView({
           </div>
 
           {/* 3. Impeccable Anti-AI-Slop Guardrails Banner */}
-          <div className="rounded-2xl border border-emerald-500/30 bg-[#0F1922] p-5 space-y-3">
+          <div className="rounded-2xl border border-emerald-500/30 bg-[#18181B] p-5 space-y-3">
             <div className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-emerald-300" />
               <h2 className="font-heading text-sm font-bold uppercase tracking-wider text-emerald-200">
@@ -508,7 +508,7 @@ export function DesignMdView({
               </h2>
             </div>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3 text-xs">
-              <div className="rounded-xl border border-emerald-500/20 bg-[#0B1219] p-3 space-y-1">
+              <div className="rounded-xl border border-emerald-500/20 bg-[#111114] p-3 space-y-1">
                 <div className="font-bold text-white">
                   No &ldquo;Cardocalypse&rdquo; & Pass Squint Test
                 </div>
@@ -518,7 +518,7 @@ export function DesignMdView({
                   focal point.
                 </p>
               </div>
-              <div className="rounded-xl border border-emerald-500/20 bg-[#0B1219] p-3 space-y-1">
+              <div className="rounded-xl border border-emerald-500/20 bg-[#111114] p-3 space-y-1">
                 <div className="font-bold text-white">
                   Tinted Neutrals & Zero Slop Gradients
                 </div>
@@ -528,7 +528,7 @@ export function DesignMdView({
                   readability.
                 </p>
               </div>
-              <div className="rounded-xl border border-emerald-500/20 bg-[#0B1219] p-3 space-y-1">
+              <div className="rounded-xl border border-emerald-500/20 bg-[#111114] p-3 space-y-1">
                 <div className="font-bold text-white">
                   Authentic Domain Copy & Physical Motion
                 </div>
@@ -542,8 +542,8 @@ export function DesignMdView({
           </div>
 
           {/* 4. Full Exportable DESIGN.md Document Preview */}
-          <div className="rounded-2xl border border-[#28304A] bg-[#111522] overflow-hidden">
-            <div className="flex items-center justify-between border-b border-[#28304A] bg-[#161B2E] px-5 py-3">
+          <div className="rounded-2xl border border-[#303033] bg-[#151518] overflow-hidden">
+            <div className="flex items-center justify-between border-b border-[#303033] bg-[#1B1B1E] px-5 py-3">
               <div className="flex items-center gap-2">
                 <FileCode2 className="h-4 w-4 text-amber-300" />
                 <span className="font-mono text-xs font-bold text-white">
@@ -554,14 +554,14 @@ export function DesignMdView({
                 <button
                   type="button"
                   onClick={handleCopyMd}
-                  className="rounded-lg border border-[#2E3856] bg-[#0E121E] px-3 py-1 text-[11px] font-semibold text-stone-100 hover:border-burnt hover:text-white transition-colors"
+                  className="rounded-lg border border-[#38383B] bg-[#121215] px-3 py-1 text-[11px] font-semibold text-stone-100 hover:border-crimson-600 hover:text-white transition-colors"
                 >
                   {copied ? "Copied!" : "Copy Markdown"}
                 </button>
                 <button
                   type="button"
                   onClick={handleDownloadMd}
-                  className="rounded-lg bg-burnt px-3 py-1 text-[11px] font-semibold text-white hover:opacity-90 transition-opacity"
+                  className="rounded-lg bg-crimson-600 px-3 py-1 text-[11px] font-semibold text-white hover:opacity-90 transition-opacity"
                 >
                   Download DESIGN.md
                 </button>
@@ -569,7 +569,7 @@ export function DesignMdView({
             </div>
             <pre
               data-testid="design-md-content-pre"
-              className="max-h-[640px] overflow-y-auto p-5 font-mono text-xs leading-relaxed text-stone-100 bg-[#0B0D14] whitespace-pre-wrap"
+              className="max-h-[640px] overflow-y-auto p-5 font-mono text-xs leading-relaxed text-stone-100 bg-[#0D0D10] whitespace-pre-wrap"
             >
               {effectiveMd}
             </pre>
@@ -577,7 +577,7 @@ export function DesignMdView({
         </>
       ) : (
         /* Editable Raw Markdown Mode */
-        <div className="rounded-2xl border border-[#28304A] bg-[#111522] p-5 space-y-4">
+        <div className="rounded-2xl border border-[#303033] bg-[#151518] p-5 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h2 className="font-heading text-sm font-bold text-white">
@@ -595,7 +595,7 @@ export function DesignMdView({
                   setIsCustomEdited(false);
                   setCustomMd(autoGeneratedMd);
                 }}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-[#2E3856] bg-[#161B2E] px-3 py-1.5 text-xs font-semibold text-amber-200 hover:border-burnt transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[#38383B] bg-[#1B1B1E] px-3 py-1.5 text-xs font-semibold text-amber-200 hover:border-crimson-600 transition-colors"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
                 <span>Reset to Auto-Generated</span>
@@ -610,7 +610,7 @@ export function DesignMdView({
               setCustomMd(e.target.value);
             }}
             rows={28}
-            className="w-full rounded-xl border border-[#28304A] bg-[#0B0D14] p-4 font-mono text-xs leading-relaxed text-stone-100 focus:border-burnt focus:outline-none"
+            className="w-full rounded-xl border border-[#303033] bg-[#0D0D10] p-4 font-mono text-xs leading-relaxed text-stone-100 focus:border-crimson-600 focus:outline-none"
           />
         </div>
       )}

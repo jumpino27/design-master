@@ -1543,7 +1543,7 @@ Currently Active Tab on User's Screen: {}\n\n\
 User Message: {}\n\
 Attached Images in This Turn: {}\n\
 force_generate (User clicked Generate Now or confirmed): {}\n\n\
-CRITICAL REMINDER: If action is 'ask_clarification', you MUST tailor your 3 to 4 numbered questions and your selectable `quick_replies` options strictly to THIS specific project and user prompt (e.g., if it is an open-source project/tool, NEVER mention 'Pricing'—ask about interactive workbench/product preview, CLI quickstart, architecture diagram, DESIGN.md/anti-slop showcase, and GitHub stars/contributors!). Once the user answers your questions or confirms, set action to 'trigger_run'.\n\
+CRITICAL REMINDER: Ask exactly ONE unresolved question with exactly THREE answers in quick_replies. Use the full conversation to adapt the next question after each answer. An answer is not a command to generate. Return trigger_run only when the brief is clear, combining the original request and all answers. Never repeat resolved questions or present a numbered question list.\n\
 Respond ONLY with the JSON object matching the ChatTurnDecision schema.",
             project_meta.name,
             project_meta.description,
@@ -1605,67 +1605,9 @@ Respond ONLY with the JSON object matching the ChatTurnDecision schema.",
             .await?;
 
         let cleaned = Self::extract_json_object(&raw_text);
-        let mut decision: ChatTurnDecision = serde_json::from_str(cleaned).unwrap_or_else(|_| {
-            let mut fallback = TestFixtureAdapter::build_contextual_clarification_turn(
-                project_meta,
-                brand,
-                existing_tabs,
-                user_message,
-                force_generate,
-            );
-            if let Some(tk) = active_tab_key {
-                if let Some(ref mut spec) = fallback.run_spec {
-                    spec.target_tab_key = tk.to_string();
-                }
-            }
-            fallback
-        });
-
-        // Guard against generic "Pricing" suggestions on Open-Source projects
-        let combined_context = format!(
-            "{} {} {} {} {}",
-            project_meta.name,
-            project_meta.description,
-            project_meta.purpose,
-            project_meta.desired_user_action,
-            user_message
-        )
-        .to_ascii_lowercase();
-        let is_open_source = combined_context.contains("open source")
-            || combined_context.contains("open-source")
-            || combined_context.contains("opensource")
-            || combined_context.contains("github repo")
-            || combined_context.contains("mit license")
-            || project_meta
-                .name
-                .to_ascii_lowercase()
-                .contains("design master");
-
-        if is_open_source && decision.action == "ask_clarification" {
-            let reply_lower = decision.assistant_reply.to_ascii_lowercase();
-            let has_pricing_in_qr = decision
-                .quick_replies
-                .iter()
-                .any(|q| q.to_ascii_lowercase().contains("pricing"));
-            if reply_lower.contains("pricing")
-                || has_pricing_in_qr
-                || decision.quick_replies.len() < 3
-            {
-                let contextual = TestFixtureAdapter::build_contextual_clarification_turn(
-                    project_meta,
-                    brand,
-                    existing_tabs,
-                    user_message,
-                    false,
-                );
-                if reply_lower.contains("pricing") || !decision.assistant_reply.contains("1.") {
-                    decision.assistant_reply = contextual.assistant_reply;
-                }
-                if has_pricing_in_qr || decision.quick_replies.len() < 3 {
-                    decision.quick_replies = contextual.quick_replies;
-                }
-            }
-        }
+        let mut decision: ChatTurnDecision = serde_json::from_str(cleaned).map_err(|_| {
+            AppError::ProviderError("The AI returned an unreadable reply. Please try again.".into())
+        })?;
 
         if force_generate && decision.action != "trigger_run" {
             decision.action = "trigger_run".to_string();
@@ -1689,9 +1631,43 @@ Respond ONLY with the JSON object matching the ChatTurnDecision schema.",
         }
 
         enforce_no_code_in_chat_decision(&mut decision, user_message, force_generate);
+        validate_chat_turn(&decision)?;
 
         Ok((decision, cost))
     }
+}
+
+pub fn validate_chat_turn(decision: &ChatTurnDecision) -> AppResult<()> {
+    if !matches!(
+        decision.action.as_str(),
+        "ask_clarification" | "reply_only" | "trigger_run"
+    ) {
+        return Err(AppError::ProviderError(
+            "The AI returned an unknown action. Please try again.".into(),
+        ));
+    }
+    if decision.action != "ask_clarification" {
+        return Ok(());
+    }
+    let options: HashSet<String> = decision
+        .quick_replies
+        .iter()
+        .map(|option| option.trim().to_lowercase())
+        .collect();
+    let is_single_question = decision.assistant_reply.matches('?').count() == 1
+        && decision.assistant_reply.trim_end().ends_with('?');
+    if !is_single_question
+        || decision.quick_replies.len() != 3
+        || options.len() != 3
+        || options.contains("")
+        || decision.run_spec.is_some()
+    {
+        return Err(AppError::ProviderError(
+            "The AI did not return one question with three distinct answers. Please try again."
+                .into(),
+        ));
+    }
+    Ok(())
 }
 
 pub fn enforce_no_code_in_chat_decision(
@@ -2318,114 +2294,59 @@ impl TestFixtureAdapter {
 
     pub fn build_contextual_clarification_turn(
         project_meta: &ProjectMetaSummary,
-        brand: &BrandSpec,
         existing_tabs: &[ExistingTabSummary],
-        user_message: &str,
+        user_request: &str,
+        answered_questions: usize,
         force_generate: bool,
     ) -> ChatTurnDecision {
-        let lower_user = user_message.to_ascii_lowercase();
-        let combined = format!(
-            "{} {} {} {} {} {}",
-            project_meta.name,
-            project_meta.description,
-            project_meta.purpose,
-            project_meta.industry,
-            project_meta.desired_user_action,
-            user_message
-        )
-        .to_ascii_lowercase();
-
-        if !force_generate {
-            let is_open_source = combined.contains("open source")
-                || combined.contains("open-source")
-                || combined.contains("opensource")
-                || combined.contains("github")
-                || combined.contains("mit license")
-                || project_meta
-                    .name
-                    .to_ascii_lowercase()
-                    .contains("design master");
-            let is_game_ui = combined.contains("game")
-                || combined.contains("hud")
-                || combined.contains("rpg")
-                || combined.contains("inventory")
-                || combined.contains("skill tree");
-
-            if is_open_source {
-                return ChatTurnDecision {
-                    action: "ask_clarification".to_string(),
-                    assistant_reply: format!(
-                        "For the **{}** open-source project, let's clarify 4 quick details before generating:\n\
-1. **Open-Source Sections**: Which sections should anchor the page (Live Workbench Preview, `git clone` CLI Quickstart, Multi-Agent Handoff Architecture, `DESIGN.md` & Anti-Slop Showcase, GitHub Contributors)?\n\
-2. **Hero Focal Point**: Interactive dark-mode Canvas & Chat Workbench preview, or bold editorial typography with a rotating 3D monogram emblem?\n\
-3. **Viewport & Scope**: Single Desktop full-page scroll (`1440px` in `2:3`), Desktop + Mobile responsive pair, or multi-page flow (`/` + `/docs` + `/showcase`)?\n\
-4. **Companion Assets**: Extract the transparent monogram logo + a 6-icon vectorial SVG feature sheet alongside the page?",
+        let lower_user = user_request.to_ascii_lowercase();
+        if !force_generate && answered_questions < 4 {
+            let is_game = project_meta.industry.to_ascii_lowercase().contains("game");
+            let (question, choices) = match answered_questions {
+                0 if is_game => (
+                    format!(
+                        "Which interface should we design first for {}?",
                         project_meta.name
                     ),
-                    quick_replies: vec![
-                        "Q1: Hero + Live Workbench Preview + CLI Quickstart + Architecture + GitHub CTA".to_string(),
-                        "Q1: Hero + DESIGN.md & Anti-Slop Showcase + Multi-Agent Pipeline + Contributors".to_string(),
-                        "Q2: Interactive Dark Workbench Preview + Rotating 3D Monogram Emblem".to_string(),
-                        "Q3: Desktop Full-Page Scroll (1440px in 2:3 Vertical)".to_string(),
-                        "Q4: Extract Transparent Monogram + 6 Vectorial Feature Icons".to_string(),
-                        "All clear — Start Generating Now".to_string(),
-                    ],
-                    run_spec: None,
-                };
-            }
-
-            if is_game_ui {
-                return ChatTurnDecision {
-                    action: "ask_clarification".to_string(),
-                    assistant_reply: format!(
-                        "For **{}** Game UI, let's clarify 4 quick details before generating:\n\
-1. **HUD / Screen Modules**: Which interface panels should we include (Health/Mana/XP telemetry bars, Inventory & Equipment grid, Skill Tree, or Main Menu)?\n\
-2. **Centerpiece & 3D UI Elements**: Include an isolated 3D UI crest/artifact reference that rotates in code while keeping the gameplay background as a clean placeholder viewport?\n\
-3. **Target Resolution**: PC/Console Widescreen (`16:9`), Tall Inventory/Loadout Panel (`2:3`), or Mobile Game (`9:16`)?\n\
-4. **Companion Assets**: Extract ornate vectorial SVG frames + transparent 3D emblem/icon sheet?",
-                        project_meta.name
-                    ),
-                    quick_replies: vec![
-                        "Q1: Full HUD Overlay + Inventory Grid + Telemetry Bars".to_string(),
-                        "Q2: Include Rotating 3D UI Crest + Clean Placeholder Gameplay Viewport".to_string(),
-                        "Q3: PC/Console Widescreen (16:9, 1440px)".to_string(),
-                        "Q4: Extract Ornate Vectorial SVG Frames + Transparent Icon Sheet".to_string(),
-                        "All clear — Start Generating Now".to_string(),
-                    ],
-                    run_spec: None,
-                };
-            }
-
-            let style_label = brand
-                .design_style
-                .as_ref()
-                .map(|s| s.style_name.as_str())
-                .unwrap_or(&brand.brand_personality);
-
-            return ChatTurnDecision {
-                action: "ask_clarification".to_string(),
-                assistant_reply: format!(
-                    "For **{}** ({}), let's clarify 4 tailored details before generating:\n\
-1. **Core Sections / Screens**: Which domain-specific sections or routes should we include for {}?\n\
-2. **Visual Focal Point**: Should the primary focal point be an interactive product showcase, asymmetric bento grid, or 3D centerpiece illustration?\n\
-3. **Target Viewport**: Desktop full-page scroll (`1440px` in `2:3`), Isolated Desktop Component (`16:9`), or Mobile (`9:16`)?\n\
-4. **Companion Assets**: Should we also extract transparent brand marks, a 6-icon vectorial SVG sheet, or a 3D object asset?",
-                    project_meta.name,
-                    style_label,
-                    if project_meta.industry.trim().is_empty() { "this product" } else { &project_meta.industry }
+                    ["HUD and inventory", "Character loadout", "Main menu"],
                 ),
-                quick_replies: vec![
-                    format!("Q1: Full {} Flow (Navbar, Hero Showcase, Core Workflows, CTA)", project_meta.name),
-                    "Q2: Interactive Product Preview + Asymmetric Bento Architecture (No AI Slop)".to_string(),
-                    "Q3: Desktop Full-Page Scroll (1440px in 2:3 Vertical)".to_string(),
-                    "Q4: Extract Transparent Brand Mark + 6 Vectorial Icons".to_string(),
-                    "All clear — Start Generating Now".to_string(),
-                ],
+                0 => (
+                    format!(
+                        "What should the first design for {} include?",
+                        project_meta.name
+                    ),
+                    [
+                        "Complete landing page",
+                        "Navbar and hero section",
+                        "A single product screen",
+                    ],
+                ),
+                1 => (
+                    "What should be the main visual focal point?".into(),
+                    [
+                        "Product preview",
+                        "Editorial typography",
+                        "A 3D brand object",
+                    ],
+                ),
+                2 => (
+                    "Which viewport should the design target?".into(),
+                    ["Desktop", "Mobile", "Desktop and mobile"],
+                ),
+                _ => (
+                    "Which reusable assets should accompany the design?".into(),
+                    ["Logo and icon sheet", "Logo only", "No separate assets"],
+                ),
+            };
+            return ChatTurnDecision {
+                action: "ask_clarification".into(),
+                assistant_reply: question,
+                quick_replies: choices.into_iter().map(String::from).collect(),
                 run_spec: None,
             };
         }
 
-        let mut dec = Self::build_fixture_chat_turn(existing_tabs, user_message, true);
+        let mut dec = Self::build_fixture_chat_turn(existing_tabs, user_request, true);
         if lower_user.contains("landing")
             || lower_user.contains("full")
             || lower_user.contains("whole")
@@ -2619,5 +2540,28 @@ impl TestFixtureAdapter {
                 refined_prompt: user_message.to_string(),
             }),
         }
+    }
+}
+
+#[cfg(test)]
+mod chat_question_tests {
+    use super::*;
+
+    #[test]
+    fn clarification_requires_one_question_and_three_distinct_choices() {
+        let mut decision = ChatTurnDecision {
+            action: "ask_clarification".into(),
+            assistant_reply: "Which screen should we design first?".into(),
+            quick_replies: vec!["Home".into(), "Dashboard".into(), "Profile".into()],
+            run_spec: None,
+        };
+        assert!(validate_chat_turn(&decision).is_ok());
+        decision.assistant_reply = "Which screen? Which viewport?".into();
+        assert!(validate_chat_turn(&decision).is_err());
+        decision.assistant_reply = "Which screen?".into();
+        decision.quick_replies[2] = " Home ".into();
+        assert!(validate_chat_turn(&decision).is_err());
+        decision.quick_replies.pop();
+        assert!(validate_chat_turn(&decision).is_err());
     }
 }

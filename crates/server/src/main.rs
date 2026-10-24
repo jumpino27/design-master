@@ -32,7 +32,7 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("Design Master listening on http://{}", config.bind_addr);
 
     let pool = init_db_pool(&config.data_dir).await?;
-    if !config.env_test_adapter {
+    if config.seed_examples && !config.env_test_adapter {
         if let Err(e) = ensure_seed_example_projects(&pool, &config).await {
             tracing::warn!("Non-fatal warning seeding example projects: {}", e);
         }

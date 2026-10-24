@@ -104,6 +104,159 @@ async fn json_request(
 }
 
 #[tokio::test]
+async fn test_bundled_showcases_are_complete_and_preserve_existing_edits() {
+    let (_tmp, state, _shutdown) = setup_test_state().await;
+    design_gen_server::db::ensure_seed_example_projects(&state.pool, &state.config)
+        .await
+        .unwrap();
+    let projects: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM projects WHERE is_example = 1")
+        .fetch_one(&state.pool)
+        .await
+        .unwrap();
+    assert_eq!(projects, 4);
+    let outputs: Vec<(String, String)> =
+        sqlx::query_as("SELECT original_rel_path, thumbnail_rel_path FROM outputs")
+            .fetch_all(&state.pool)
+            .await
+            .unwrap();
+    assert_eq!(outputs.len(), 23);
+    for (original, thumbnail) in outputs {
+        assert!(state.config.resolve_rel_path(&original).unwrap().is_file());
+        assert!(state.config.resolve_rel_path(&thumbnail).unwrap().is_file());
+    }
+    let cost: i64 = sqlx::query_scalar("SELECT SUM(actual_cost_micros) FROM runs")
+        .fetch_one(&state.pool)
+        .await
+        .unwrap();
+    assert_eq!(cost, 0);
+    sqlx::query("UPDATE projects SET name = 'My edited Nexora' WHERE id = 'example-nexora'")
+        .execute(&state.pool)
+        .await
+        .unwrap();
+    design_gen_server::db::ensure_seed_example_projects(&state.pool, &state.config)
+        .await
+        .unwrap();
+    let name: String = sqlx::query_scalar("SELECT name FROM projects WHERE id = 'example-nexora'")
+        .fetch_one(&state.pool)
+        .await
+        .unwrap();
+    assert_eq!(name, "My edited Nexora");
+    let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM outputs")
+        .fetch_one(&state.pool)
+        .await
+        .unwrap();
+    assert_eq!(count, 23);
+}
+
+#[tokio::test]
+async fn test_clarification_answers_advance_one_question_and_preserve_the_brief() {
+    let (_tmp, state, _shutdown) = setup_test_state().await;
+    let app = build_router(state.clone());
+    let (_, project) = json_request(
+        &app,
+        "POST",
+        "/api/projects",
+        Some(serde_json::json!({
+            "name": "Interview test", "description": "Team planning", "industry": "SaaS"
+        })),
+    )
+    .await;
+    let thread = project["default_thread_id"].as_str().unwrap();
+    let endpoint = format!("/api/threads/{thread}/chat");
+    let original = "Create a complete landing page for our planning product";
+    let (status, mut turn) = json_request(
+        &app,
+        "POST",
+        &endpoint,
+        Some(serde_json::json!({"message": original})),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let answers = [
+        "Q1: Complete landing page",
+        "Inside the hero, use a calm editorial layout without 3D",
+        "Desktop",
+        "No separate assets",
+    ];
+    for (index, answer) in answers.iter().enumerate() {
+        assert_eq!(turn["action"], "ask_clarification");
+        assert!(turn["run"].is_null());
+        let question = &turn["assistant_message"];
+        assert_eq!(question["quick_replies"].as_array().unwrap().len(), 3);
+        assert_eq!(
+            question["content"].as_str().unwrap().matches('?').count(),
+            1
+        );
+        let previous_question = question["content"].clone();
+        let (status, next) = json_request(
+            &app,
+            "POST",
+            &endpoint,
+            Some(serde_json::json!({
+                "message": answer, "answer_to_message_id": question["id"]
+            })),
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK);
+        if index < answers.len() - 1 {
+            assert_ne!(next["assistant_message"]["content"], previous_question);
+        }
+        turn = next;
+    }
+    assert_eq!(turn["action"], "trigger_run");
+    assert!(turn["assistant_message"]["quick_replies"]
+        .as_array()
+        .unwrap()
+        .is_empty());
+    let prompt: String = sqlx::query_scalar("SELECT user_prompt FROM runs WHERE id = ?")
+        .bind(turn["run"]["id"].as_str().unwrap())
+        .fetch_one(&state.pool)
+        .await
+        .unwrap();
+    assert!(prompt.contains(original));
+    assert!(prompt.contains("Inside the hero, use a calm editorial layout without 3D"));
+    assert!(prompt.contains("No separate assets"));
+}
+
+#[tokio::test]
+async fn test_a_question_accepts_only_one_answer_even_with_concurrent_requests() {
+    let (_tmp, state, _shutdown) = setup_test_state().await;
+    let app = build_router(state.clone());
+    let (_, project) = json_request(
+        &app,
+        "POST",
+        "/api/projects",
+        Some(serde_json::json!({"name": "Click test"})),
+    )
+    .await;
+    let thread = project["default_thread_id"].as_str().unwrap();
+    let endpoint = format!("/api/threads/{thread}/chat");
+    let (_, turn) = json_request(
+        &app,
+        "POST",
+        &endpoint,
+        Some(serde_json::json!({"message": "Design my landing page"})),
+    )
+    .await;
+    let body = serde_json::json!({"message": "Complete landing page", "answer_to_message_id": turn["assistant_message"]["id"]});
+    let (a, b) = tokio::join!(
+        json_request(&app, "POST", &endpoint, Some(body.clone())),
+        json_request(&app, "POST", &endpoint, Some(body.clone())),
+    );
+    let statuses = [a.0, b.0];
+    assert!(statuses.contains(&StatusCode::OK));
+    assert!(statuses.contains(&StatusCode::CONFLICT));
+    let count: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM thread_messages WHERE thread_id = ? AND role = 'user'",
+    )
+    .bind(thread)
+    .fetch_one(&state.pool)
+    .await
+    .unwrap();
+    assert_eq!(count, 2);
+}
+
+#[tokio::test]
 async fn test_setup_key_masking_and_static_vs_api_404() {
     let (_tmp, state, _shutdown) = setup_test_state().await;
     let app = build_router(state);

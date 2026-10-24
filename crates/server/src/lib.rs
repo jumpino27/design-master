@@ -8,6 +8,7 @@ pub mod image_util;
 pub mod models;
 pub mod provider;
 pub mod routes;
+mod showcases;
 pub mod style_catalog;
 pub mod updater;
 pub mod worker;
@@ -70,7 +71,7 @@ pub async fn start_embedded_server(
     );
 
     let pool = db::init_db_pool(&config.data_dir).await?;
-    if !config.env_test_adapter {
+    if config.seed_examples && !config.env_test_adapter {
         if let Err(e) = db::ensure_seed_example_projects(&pool, &config).await {
             tracing::warn!("Non-fatal warning seeding example projects: {}", e);
         }

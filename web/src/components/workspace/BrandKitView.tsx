@@ -494,7 +494,7 @@ export function BrandKitView({
             <h1 className="text-2xl font-bold text-stone-ink">
               Brand Kit & Design System Studio
             </h1>
-            <span className="rounded-full bg-burnt/15 border border-burnt/30 px-2.5 py-0.5 text-xs font-bold text-burnt">
+            <span className="rounded-full bg-crimson-600/15 border border-crimson-600/30 px-2.5 py-0.5 text-xs font-bold text-crimson-300">
               Snapshot v{brandVersion}
             </span>
           </div>
@@ -509,7 +509,7 @@ export function BrandKitView({
             type="submit"
             disabled={saving}
             data-testid="save-brand-kit-btn"
-            className="inline-flex items-center gap-2 rounded-xl bg-burnt px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-burnt-hover disabled:opacity-50 transition-colors"
+            className="inline-flex items-center gap-2 rounded-xl bg-crimson-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-crimson-700 disabled:opacity-50 transition-colors"
           >
             <Save className="h-4 w-4" />
             <span>
@@ -551,11 +551,11 @@ export function BrandKitView({
       {/* ================================================================= */}
       <section
         data-testid="ai-brand-enhancer-card"
-        className="rounded-2xl border-2 border-burnt/50 bg-gradient-to-br from-[#20163B] via-[#141827] to-[#0D101B] p-5 text-white shadow-card space-y-4"
+        className="rounded-2xl border-2 border-crimson-600/50 bg-gradient-to-br from-[#1B1B1E] via-[#18181B] to-[#101013] p-5 text-white shadow-card space-y-4"
       >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-burnt text-white shadow-sm">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-crimson-600 text-white shadow-sm">
               <Wand2 className="h-5 w-5" />
             </div>
             <div>
@@ -563,7 +563,7 @@ export function BrandKitView({
                 <h2 className="text-sm font-bold text-white">
                   Enhance & Generate Branding with AI
                 </h2>
-                <span className="rounded-full bg-burnt/30 border border-burnt/50 px-2 py-0.5 text-[10px] font-bold text-amber-200">
+                <span className="rounded-full bg-crimson-600/30 border border-crimson-600/50 px-2 py-0.5 text-[10px] font-bold text-amber-200">
                   Logo + Product Brief → Full Light & Dark Palettes
                 </span>
               </div>
@@ -584,7 +584,7 @@ export function BrandKitView({
               <span className="text-xs font-bold text-white/90">
                 1. Brand Logo for AI Inspection
               </span>
-              <span className="text-[10px] text-white/50">Optional</span>
+              <span className="text-[10px] text-stone-muted">Optional</span>
             </div>
 
             <div className="flex items-center gap-3">
@@ -616,7 +616,7 @@ export function BrandKitView({
                     "No logo uploaded yet"}
                 </div>
                 <label className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-white/20 cursor-pointer transition-colors">
-                  <Upload className="h-3 w-3 text-burnt" />
+                  <Upload className="h-3 w-3 text-crimson-300" />
                   <span>Upload / Change Logo</span>
                   <input
                     type="file"
@@ -646,12 +646,12 @@ export function BrandKitView({
                   setMeta({ ...meta, description: e.target.value });
                 }}
                 placeholder="Describe what your product does, target customers, and any mood or color preferences (e.g. 'AI developer platform, sleek dark mode with warm stone light mode and high-contrast CTAs')..."
-                className="w-full rounded-xl border border-white/15 bg-black/35 p-2.5 text-xs text-white placeholder:text-white/40 focus:border-burnt focus:outline-none"
+                className="w-full rounded-xl border border-white/15 bg-black/35 p-2.5 text-xs text-white placeholder:text-stone-muted focus:border-crimson-600 focus:outline-none"
               />
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-[11px] text-white/55">
+              <span className="text-[11px] text-stone-muted">
                 Generates Light + Dark Mode palettes, fonts, style #1–#50 &
                 brief
               </span>
@@ -660,7 +660,7 @@ export function BrandKitView({
                 disabled={suggesting}
                 data-testid="enhance-brand-with-ai-btn"
                 onClick={handleSuggestBrandWithAi}
-                className="inline-flex items-center gap-2 rounded-xl bg-burnt px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-burnt-hover disabled:opacity-50 transition-all"
+                className="inline-flex items-center gap-2 rounded-xl bg-crimson-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-crimson-700 disabled:opacity-50 transition-all"
               >
                 {suggesting ? (
                   <>
@@ -684,12 +684,12 @@ export function BrandKitView({
         {proposal && (
           <div
             data-testid="ai-brand-proposal-review"
-            className="mt-4 rounded-2xl border-2 border-burnt bg-stone-surface p-5 text-stone-ink shadow-modal space-y-4"
+            className="mt-4 rounded-2xl border-2 border-crimson-600 bg-stone-surface p-5 text-stone-ink shadow-modal space-y-4"
           >
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-border pb-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-burnt" />
+                  <Sparkles className="h-4 w-4 text-crimson-300" />
                   <h3 className="text-sm font-bold text-stone-ink">
                     AI Brand & Palette Proposal Ready for Review
                   </h3>
@@ -710,7 +710,7 @@ export function BrandKitView({
                 <button
                   type="button"
                   onClick={applyProposalToEditor}
-                  className="rounded-xl border border-burnt bg-white px-3.5 py-1.5 text-xs font-bold text-burnt hover:bg-burnt/10"
+                  className="rounded-xl border border-crimson-600 bg-white px-3.5 py-1.5 text-xs font-bold text-crimson-300 hover:bg-crimson-600/10"
                 >
                   Apply to Editor
                 </button>
@@ -719,7 +719,7 @@ export function BrandKitView({
                   disabled={saving}
                   data-testid="apply-and-save-ai-brand-btn"
                   onClick={applyAndSaveProposalImmediately}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-burnt px-4 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-burnt-hover"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-crimson-600 px-4 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-crimson-700"
                 >
                   <Check className="h-3.5 w-3.5" />
                   <span>
@@ -763,7 +763,7 @@ export function BrandKitView({
                 <div className="font-bold text-stone-ink truncate">
                   {proposal.target_audience || meta.target_audience}
                 </div>
-                <div className="text-[11px] text-burnt font-semibold mt-0.5 truncate">
+                <div className="text-[11px] text-crimson-300 font-semibold mt-0.5 truncate">
                   CTA: {proposal.desired_user_action || meta.desired_user_action}
                 </div>
               </div>
@@ -804,7 +804,7 @@ export function BrandKitView({
               <div className="rounded-xl border border-stone-border bg-[#1B1A18] p-3 text-white space-y-2">
                 <div className="flex items-center justify-between text-xs font-bold">
                   <span className="flex items-center gap-1.5">
-                    <Moon className="h-3.5 w-3.5 text-indigo-400" />
+                    <Moon className="h-3.5 w-3.5 text-crimson-300" />
                     Proposed Dark Mode Palette
                   </span>
                 </div>
@@ -822,7 +822,7 @@ export function BrandKitView({
                         <span className="font-medium capitalize text-white/90">
                           {k.replace("_", " ")}
                         </span>
-                        <span className="font-mono text-white/55">{hex}</span>
+                        <span className="font-mono text-stone-muted">{hex}</span>
                       </div>
                     )
                   )}
@@ -843,7 +843,7 @@ export function BrandKitView({
               <h2 className="text-sm font-bold text-stone-ink">
                 1. Active Web Design Style & Visual System
               </h2>
-              <span className="rounded-full bg-burnt/20 border border-burnt/40 px-2.5 py-0.5 text-[10px] font-bold text-purple-200">
+              <span className="rounded-full bg-crimson-600/20 border border-crimson-600/40 px-2.5 py-0.5 text-[10px] font-bold text-crimson-300">
                 20 Curated Design Systems + 13 Modifiers
               </span>
             </div>
@@ -858,7 +858,7 @@ export function BrandKitView({
             onClick={() => setStyleModalOpen(true)}
             className="inline-flex items-center gap-1.5 rounded-xl bg-charcoal px-4 py-2 text-xs font-bold text-white hover:bg-charcoal-hover shadow-sm shrink-0 transition-colors"
           >
-            <Palette className="h-3.5 w-3.5 text-burnt" />
+            <Palette className="h-3.5 w-3.5 text-crimson-300" />
             <span>
               {brand.design_style?.style_name
                 ? "Browse / Change Design Style"
@@ -891,7 +891,7 @@ export function BrandKitView({
                   </span>
                 )}
                 {brand.design_style.modifiers?.length > 0 && (
-                  <span className="rounded-full bg-burnt/15 px-2.5 py-0.5 text-[11px] font-bold text-burnt">
+                  <span className="rounded-full bg-crimson-600/15 px-2.5 py-0.5 text-[11px] font-bold text-crimson-300">
                     + {brand.design_style.modifiers.join(" + ")}
                   </span>
                 )}
@@ -1070,12 +1070,12 @@ export function BrandKitView({
           <div className="rounded-2xl border border-charcoal-border bg-[#1B1A18] p-4 text-white space-y-4">
             <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
               <div className="flex items-center gap-2">
-                <Moon className="h-4 w-4 text-indigo-400" />
+                <Moon className="h-4 w-4 text-crimson-300" />
                 <span className="text-xs font-bold text-white">
                   Dark Mode Palette
                 </span>
               </div>
-              <span className="text-[10px] font-mono text-white/50">
+              <span className="text-[10px] font-mono text-stone-muted">
                 11 Semantic Tokens
               </span>
             </div>
@@ -1271,7 +1271,7 @@ export function BrandKitView({
               Active Logo Asset
             </label>
             <div className="flex items-center gap-2 flex-wrap">
-              <label className="inline-flex items-center gap-1.5 rounded-lg bg-burnt px-3 py-1.5 text-xs font-bold text-white hover:bg-burnt-hover cursor-pointer shadow-sm">
+              <label className="inline-flex items-center gap-1.5 rounded-lg bg-crimson-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-crimson-700 cursor-pointer shadow-sm">
                 <Upload className="h-3.5 w-3.5" />
                 <span>Upload Logo</span>
                 <input
@@ -1300,7 +1300,7 @@ export function BrandKitView({
                   }
                   className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs ${
                     brand.logo.primary_asset_id === la.id
-                      ? "border-burnt bg-burnt/10 text-burnt font-bold"
+                      ? "border-crimson-600 bg-crimson-600/10 text-crimson-300 font-bold"
                       : "border-stone-border bg-stone-canvas text-stone-ink"
                   }`}
                 >
@@ -1624,7 +1624,7 @@ export function BrandKitView({
       {brandHistory.length > 0 && (
         <section className="rounded-2xl border border-stone-border bg-stone-surface p-5 space-y-3">
           <div className="flex items-center gap-2 text-xs font-bold text-stone-ink">
-            <History className="h-4 w-4 text-burnt" />
+            <History className="h-4 w-4 text-crimson-300" />
             <span>Immutable Brand Version History</span>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -1640,7 +1640,7 @@ export function BrandKitView({
                 }}
                 className={`rounded-xl border px-3 py-1.5 text-xs ${
                   bh.version === brandVersion
-                    ? "border-burnt bg-burnt/10 text-burnt font-bold"
+                    ? "border-crimson-600 bg-crimson-600/10 text-crimson-300 font-bold"
                     : "border-stone-border bg-white text-stone-ink hover:bg-stone-canvas"
                 }`}
               >

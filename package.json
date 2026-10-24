@@ -1,10 +1,11 @@
 {
   "name": "design-master-workspace",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Design Master (DM) — Dark-mode local AI design workbench for brand-consistent UI, multi-page flows, game HUDs, transparent assets, and coding-agent handoffs",
   "scripts": {
     "dev": "node scripts/run.mjs dev",
+    "dev:creator": "node scripts/run.mjs dev --web --no-examples",
     "build": "node scripts/run.mjs build",
     "start": "node scripts/run.mjs start",
     "tauri:dev": "tauri dev",
@@ -19,6 +20,7 @@
     "test:rust": "cargo test --workspace",
     "test:web": "pnpm --dir web typecheck",
     "test:e2e": "playwright test",
+    "test:ui": "playwright test --config playwright.ui.config.ts",
     "lint:rust": "cargo clippy --workspace --all-targets -- -D warnings",
     "fmt:rust": "cargo fmt --all -- --check"
   },

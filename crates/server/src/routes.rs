@@ -1932,6 +1932,7 @@ struct ThreadChatRequest {
     active_output_id: Option<String>,
     quality_preference: Option<String>,
     force_generate: Option<bool>,
+    answer_to_message_id: Option<String>,
 }
 
 fn strip_tab_version_suffix(key: &str, label: &str) -> (String, String) {
@@ -2335,12 +2336,26 @@ async fn thread_chat_handler(
 
     // Load recent thread messages for multi-turn context before inserting the new user message
     let prior_msg_rows = sqlx::query(
-        "SELECT role, content, attachments_json, linked_run_id FROM thread_messages WHERE thread_id = ? ORDER BY created_at DESC LIMIT 10"
+        "SELECT id, role, content, attachments_json, quick_replies_json, linked_run_id FROM thread_messages WHERE thread_id = ? ORDER BY created_at DESC"
     )
     .bind(&thread_id)
     .fetch_all(&state.pool)
     .await
     .unwrap_or_default();
+
+    if let Some(answer_to) = req.answer_to_message_id.as_deref() {
+        let is_current_question = prior_msg_rows.first().is_some_and(|row| {
+            row.get::<String, _>("id") == answer_to
+                && row.get::<String, _>("role") == "assistant"
+                && row.get::<Option<String>, _>("linked_run_id").is_none()
+                && row.get::<String, _>("quick_replies_json") != "[]"
+        });
+        if !is_current_question {
+            return Err(AppError::Conflict(
+                "This question has already been answered. Use the latest question.".into(),
+            ));
+        }
+    }
 
     // Carry forward any user-attached reference images from earlier turns in the current clarification cycle
     let mut effective_selected_refs = selected_refs.clone();
@@ -2411,22 +2426,27 @@ async fn thread_chat_handler(
     }
     let selected_refs = effective_selected_refs;
 
-    // Check if the user has already had a clarifying conversational turn with the AI since the last run
-    let has_active_clarification_turn = prior_msg_rows
+    // Keep every turn in the current brief so a longer interview retains its original request.
+    let cycle_len = prior_msg_rows
         .iter()
-        .find(|r| r.get::<String, _>("role") == "assistant")
-        .map(|r| {
-            r.try_get::<Option<String>, _>("linked_run_id")
-                .ok()
-                .flatten()
-                .is_none()
+        .position(|row| {
+            row.get::<String, _>("role") == "assistant"
+                && row.get::<Option<String>, _>("linked_run_id").is_some()
         })
-        .unwrap_or(false);
-
-    let recent_chat: Vec<(String, String)> = prior_msg_rows
-        .into_iter()
+        .map(|index| index + 1)
+        .unwrap_or(prior_msg_rows.len());
+    let current_cycle = &prior_msg_rows[..cycle_len];
+    let answered_questions = current_cycle
+        .iter()
+        .filter(|row| {
+            row.get::<String, _>("role") == "assistant"
+                && row.get::<String, _>("quick_replies_json") != "[]"
+        })
+        .count();
+    let recent_chat: Vec<(String, String)> = current_cycle
+        .iter()
         .rev()
-        .map(|r| (r.get::<String, _>("role"), r.get::<String, _>("content")))
+        .map(|row| (row.get("role"), row.get("content")))
         .collect();
 
     // Save the user message to thread_messages
@@ -2438,8 +2458,8 @@ async fn thread_chat_handler(
         user_text.clone()
     };
 
-    sqlx::query(
-        "INSERT INTO thread_messages (id, thread_id, role, content, attachments_json, highlight_annotations_json, quick_replies_json, linked_run_id, target_tab_key, target_tab_label, created_at) VALUES (?, ?, 'user', ?, ?, ?, '[]', NULL, ?, NULL, ?)"
+    let inserted = sqlx::query(
+        "INSERT INTO thread_messages (id, thread_id, role, content, attachments_json, highlight_annotations_json, quick_replies_json, linked_run_id, target_tab_key, target_tab_label, created_at) SELECT ?, ?, 'user', ?, ?, ?, '[]', NULL, ?, NULL, ? WHERE ? IS NULL OR ? = (SELECT id FROM thread_messages WHERE thread_id = ? ORDER BY created_at DESC LIMIT 1)"
     )
     .bind(&user_msg_id)
     .bind(&thread_id)
@@ -2448,8 +2468,17 @@ async fn thread_chat_handler(
     .bind(serde_json::to_string(&highlights).unwrap_or_else(|_| "[]".into()))
     .bind(req.active_tab_key.as_deref())
     .bind(&now)
+    .bind(req.answer_to_message_id.as_deref())
+    .bind(req.answer_to_message_id.as_deref())
+    .bind(&thread_id)
     .execute(&state.pool)
     .await?;
+
+    if inserted.rows_affected() != 1 {
+        return Err(AppError::Conflict(
+            "This question has already been answered. Use the latest question.".into(),
+        ));
+    }
 
     let project_meta = ProjectMetaSummary {
         id: project_id.clone(),
@@ -2462,32 +2491,21 @@ async fn thread_chat_handler(
         desired_user_action: proj_row.get("desired_user_action"),
     };
 
-    let force_gen = req.force_generate.unwrap_or(false)
-        || !highlights.is_empty()
-        || effective_user_text
-            .to_ascii_lowercase()
-            .starts_with("inside the ")
-        || (has_active_clarification_turn
-            && (effective_user_text.contains("Q1:")
-                || effective_user_text.contains("Q2:")
-                || effective_user_text.contains("Q3:")
-                || effective_user_text.contains("Q4:")
-                || effective_user_text
-                    .to_ascii_lowercase()
-                    .contains("all clear")
-                || effective_user_text
-                    .to_ascii_lowercase()
-                    .contains("start generating")
-                || effective_user_text
-                    .to_ascii_lowercase()
-                    .contains("generate now")));
+    let force_gen = req.force_generate.unwrap_or(false) || !highlights.is_empty();
 
     let mut decision = if settings.test_adapter_enabled {
+        let request_with_answers = prior_clarification_user_texts
+            .iter()
+            .rev()
+            .map(String::as_str)
+            .chain(std::iter::once(effective_user_text.as_str()))
+            .collect::<Vec<_>>()
+            .join("\n");
         TestFixtureAdapter::build_contextual_clarification_turn(
             &project_meta,
-            &brand_spec,
             &existing_tabs,
-            &effective_user_text,
+            &request_with_answers,
+            answered_questions,
             force_gen,
         )
     } else {
@@ -2524,14 +2542,13 @@ async fn thread_chat_handler(
         {
             Ok((dec, _cost)) => dec,
             Err(err) => {
-                tracing::warn!("Chat router LLM fallback due to error: {}", err);
-                TestFixtureAdapter::build_contextual_clarification_turn(
-                    &project_meta,
-                    &brand_spec,
-                    &existing_tabs,
-                    &effective_user_text,
-                    force_gen,
-                )
+                // An unsuccessful model call must leave the pending question retryable.
+                sqlx::query("DELETE FROM thread_messages WHERE id = ?")
+                    .bind(&user_msg_id)
+                    .execute(&state.pool)
+                    .await?;
+                tracing::warn!(error = %crate::error::redact_secrets(&err.to_string()), "Chat router request failed");
+                return Err(err);
             }
         }
     };
@@ -2601,24 +2618,6 @@ async fn thread_chat_handler(
                     .unwrap_or_else(|| "desktop".to_string()),
                 refined_prompt: combined_history_and_msg,
             });
-        }
-    } else if !has_active_clarification_turn
-        && (decision.action == "trigger_run" || decision.action == "generate")
-    {
-        // Always clarify with 3-4 project-specific questions first before starting a new generation run!
-        let contextual = TestFixtureAdapter::build_contextual_clarification_turn(
-            &project_meta,
-            &brand_spec,
-            &existing_tabs,
-            &effective_user_text,
-            false,
-        );
-        decision.action = "ask_clarification".to_string();
-        if decision.quick_replies.is_empty() {
-            decision.quick_replies = contextual.quick_replies;
-        }
-        if !decision.assistant_reply.contains('?') {
-            decision.assistant_reply = contextual.assistant_reply;
         }
     }
 

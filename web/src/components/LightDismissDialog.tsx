@@ -9,6 +9,7 @@ interface LightDismissDialogProps {
   title: string;
   subtitle?: string;
   maxWidthClass?: string;
+  bodyClassName?: string;
   children: React.ReactNode;
 }
 
@@ -18,12 +19,14 @@ export function LightDismissDialog({
   title,
   subtitle,
   maxWidthClass = "max-w-3xl",
+  bodyClassName = "min-h-0 flex-auto overflow-y-auto overscroll-contain p-5 sm:p-6",
   children,
 }: LightDismissDialogProps) {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const openPropRef = useRef(open);
   openPropRef.current = open;
   const titleId = useId();
+  const subtitleId = useId();
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -81,27 +84,28 @@ export function LightDismissDialog({
       ref={dialogRef}
       {...({ closedby: "any" } as Record<string, string>)}
       aria-labelledby={titleId}
-      className={`w-full ${maxWidthClass} rounded-xl border border-stone-border bg-stone-surface p-0 text-stone-ink shadow-2xl open:flex open:flex-col max-h-[90vh]`}
+      aria-describedby={subtitle ? subtitleId : undefined}
+      className={`m-auto w-[calc(100%_-_2rem)] ${maxWidthClass} max-h-[calc(100dvh_-_2rem)] overflow-hidden rounded-xl border border-stone-border bg-stone-surface p-0 text-stone-ink shadow-2xl open:flex open:flex-col`}
     >
-      <div className="flex items-center justify-between border-b border-stone-border px-6 py-4 bg-white rounded-t-xl">
-        <div>
+      <div className="flex shrink-0 items-start justify-between gap-4 border-b border-stone-border bg-stone-card px-5 py-4 sm:px-6">
+        <div className="min-w-0">
           <h2 id={titleId} className="text-base font-semibold text-stone-ink">
             {title}
           </h2>
           {subtitle && (
-            <p className="text-xs text-stone-muted mt-0.5">{subtitle}</p>
+            <p id={subtitleId} className="mt-1 text-xs leading-relaxed text-stone-muted">{subtitle}</p>
           )}
         </div>
         <button
           type="button"
           onClick={() => dialogRef.current?.close()}
           aria-label="Close dialog"
-          className="rounded-lg p-1.5 text-stone-muted hover:bg-stone-canvas hover:text-stone-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-burnt"
+          className="shrink-0 rounded-lg p-1.5 text-stone-muted hover:bg-stone-canvas hover:text-stone-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-crimson-600"
         >
           <X className="h-4 w-4" />
         </button>
       </div>
-      <div className="overflow-y-auto p-6 flex-1">{children}</div>
+      <div className={bodyClassName}>{children}</div>
     </dialog>
   );
 }

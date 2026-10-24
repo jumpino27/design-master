@@ -7,6 +7,7 @@ const e2eDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "design-gen-e2e-"));
 
 export default defineConfig({
   testDir: "./tests",
+  testMatch: "e2e.spec.ts",
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: 0,

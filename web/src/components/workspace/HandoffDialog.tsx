@@ -135,7 +135,7 @@ export function HandoffDialog({
               disabled={togglingExtract}
               checked={handoff.include_extraction_instructions}
               onChange={(e) => handleToggleExtraction(e.target.checked)}
-              className="rounded border-stone-border text-burnt focus:ring-burnt"
+              className="rounded border-stone-border text-crimson-300 focus:ring-crimson-600"
             />
             <span>
               Include embedded asset extraction & crop instructions (Default ON)
@@ -158,7 +158,7 @@ export function HandoffDialog({
               onClick={handleExportPortableBundle}
               className="inline-flex items-center gap-1.5 rounded-lg border border-stone-border bg-stone-surface px-3 py-1.5 text-xs font-medium text-stone-ink hover:bg-stone-canvas disabled:opacity-50"
             >
-              <Archive className="h-3.5 w-3.5 text-burnt" />
+              <Archive className="h-3.5 w-3.5 text-crimson-300" />
               <span>
                 {exportingBundle
                   ? "Packaging ZIP..."
@@ -169,7 +169,7 @@ export function HandoffDialog({
             <button
               type="button"
               onClick={handleCopyClick}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-burnt px-4 py-1.5 text-xs font-semibold text-white hover:bg-burnt-hover"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-crimson-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-crimson-700"
             >
               {copied ? (
                 <>
@@ -195,11 +195,11 @@ export function HandoffDialog({
         )}
 
         <div>
-          <div className="flex items-center justify-between text-[11px] text-stone-muted mb-1">
-            <span className="inline-flex items-center gap-1">
-              <FileText className="h-3 w-3" />
-              Saved at:{" "}
-              <code className="font-mono">{handoff.implementation_path}</code>
+          <div className="mb-2 flex flex-wrap items-start justify-between gap-2 text-[11px] text-stone-muted">
+            <span className="inline-flex min-w-0 flex-1 items-start gap-1">
+              <FileText className="h-3 w-3 shrink-0" />
+              <span className="shrink-0">Saved at:</span>
+              <code className="min-w-0 break-all font-mono">{handoff.implementation_path}</code>
             </span>
             <button
               type="button"
@@ -207,7 +207,7 @@ export function HandoffDialog({
                 textareaRef.current?.focus();
                 textareaRef.current?.select();
               }}
-              className="text-burnt hover:underline font-medium"
+              className="shrink-0 text-crimson-300 hover:underline font-medium"
             >
               Select all text
             </button>
@@ -218,7 +218,7 @@ export function HandoffDialog({
             rows={18}
             value={handoff.clipboard_text}
             aria-label="Handoff implementation prompt text"
-            className="w-full rounded-lg border border-stone-border bg-white p-3.5 text-xs font-mono text-stone-ink leading-relaxed focus:outline-burnt"
+            className="w-full rounded-lg border border-stone-border bg-white p-3.5 text-xs font-mono text-stone-ink leading-relaxed focus:outline-crimson-600"
           />
         </div>
       </div>

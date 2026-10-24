@@ -4,6 +4,7 @@ const isProdBuild =
   process.env.NEXT_OUTPUT_EXPORT === "true";
 
 const nextConfig = {
+  distDir: process.env.DESIGN_MASTER_NEXT_DIST_DIR || ".next",
   ...(isProdBuild ? { output: "export" } : {}),
   images: {
     unoptimized: true,

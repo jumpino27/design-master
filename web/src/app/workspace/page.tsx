@@ -81,6 +81,7 @@ import { BrandKitView } from "@/components/workspace/BrandKitView";
 import { DesignMdView } from "@/components/workspace/DesignMdView";
 import { AssetsLibraryView } from "@/components/workspace/AssetsLibraryView";
 import { HandoffDialog } from "@/components/workspace/HandoffDialog";
+import { ClarificationCard } from "@/components/workspace/ClarificationCard";
 import { DetailsDrawer } from "@/components/workspace/DetailsDrawer";
 import { ImageViewerModal } from "@/components/workspace/ImageViewerModal";
 import { FullPagePlanReview } from "@/components/workspace/FullPagePlanReview";
@@ -177,9 +178,7 @@ function WorkspaceContent() {
 
   // Sideways Chat & Composer state
   const [chatInput, setChatInput] = useState<string>("");
-  const [selectedQuickReplies, setSelectedQuickReplies] = useState<
-    Record<string, string[]>
-  >({});
+  const chatRequestInFlight = useRef(false);
   const [selectedRefs, setSelectedRefs] = useState<SelectedReference[]>([]);
   const [quality, setQuality] = useState<string>("low");
   const [sendingChat, setSendingChat] = useState<boolean>(false);
@@ -276,10 +275,23 @@ function WorkspaceContent() {
 
   const handoffCacheRef = useRef<Record<string, HandoffResponse>>({});
   const tabRowScrollRef = useRef<HTMLDivElement | null>(null);
+  const tabDropdownButtonRef = useRef<HTMLButtonElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const chatInputRef = useRef<HTMLTextAreaElement | null>(null);
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
   const lastAutoSwitchedRunRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!tabDropdownOpen) return;
+    const dismissOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      setTabDropdownOpen(false);
+      tabDropdownButtonRef.current?.focus();
+    };
+    window.addEventListener("keydown", dismissOnEscape);
+    return () => window.removeEventListener("keydown", dismissOnEscape);
+  }, [tabDropdownOpen]);
 
   const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
@@ -420,6 +432,11 @@ function WorkspaceContent() {
     () => threadDetail?.messages || [],
     [threadDetail?.messages]
   );
+
+  const latestMessage = messages.at(-1);
+  const pendingQuestion = latestMessage?.role === "assistant" &&
+    !latestMessage.linked_run_id && latestMessage.quick_replies.length > 0
+    ? latestMessage : null;
 
   // Active generating run check (locks chat while AI is planning or rendering images)
   const activeGeneratingRun: RunDto | null = useMemo(() => {
@@ -952,13 +969,15 @@ function WorkspaceContent() {
       overrideText?: string;
       overrideHighlights?: HighlightAnnotation[];
       forceGenerate?: boolean;
+      answerToMessageId?: string;
     }) => {
-      if (!activeThreadId || isChatLocked) return;
+      if (!activeThreadId || isChatLocked || chatRequestInFlight.current) return false;
       const textToSend = (opts?.overrideText ?? chatInput).trim();
       const highlightsToSend = opts?.overrideHighlights ?? queuedHighlights;
 
-      if (!textToSend && highlightsToSend.length === 0) return;
+      if (!textToSend && highlightsToSend.length === 0) return false;
 
+      chatRequestInFlight.current = true;
       setSendingChat(true);
       setChatError(null);
 
@@ -976,6 +995,8 @@ function WorkspaceContent() {
               active_output_id: activeTabOutput?.id || null,
               quality_preference: quality,
               force_generate: opts?.forceGenerate || false,
+              answer_to_message_id: opts?.answerToMessageId ??
+                (!opts?.forceGenerate ? pendingQuestion?.id : undefined),
             }),
           }
         );
@@ -1004,17 +1025,21 @@ function WorkspaceContent() {
               : `Generating inside "${res.target_tab_label || normKey}" tab...`
           );
         }
+        return true;
       } catch (err: unknown) {
         setChatError(
           err instanceof Error ? err.message : "Failed to send chat message"
         );
+        return false;
       } finally {
+        chatRequestInFlight.current = false;
         setSendingChat(false);
       }
     },
     [
       activeThreadId,
       isChatLocked,
+      pendingQuestion?.id,
       chatInput,
       queuedHighlights,
       selectedRefs,
@@ -1602,7 +1627,7 @@ function WorkspaceContent() {
             }
           >
             {sidebarCollapsed ? (
-              <PanelLeftOpen className="h-4 w-4 text-burnt" />
+              <PanelLeftOpen className="h-4 w-4 text-crimson-300" />
             ) : (
               <PanelLeftClose className="h-4 w-4" />
             )}
@@ -1663,7 +1688,7 @@ function WorkspaceContent() {
               className="hidden md:inline-flex items-center gap-1.5 rounded-md border border-charcoal-border bg-charcoal-surface px-2.5 py-1 text-[11px] font-medium text-charcoal-text hover:bg-charcoal-hover"
               title="Active Web Design Style — click to inspect or enhance with AI"
             >
-              <Palette className="h-3 w-3 text-burnt" />
+              <Palette className="h-3 w-3 text-crimson-300" />
               <span>
                 #{currentBrand.design_style.style_number}{" "}
                 {currentBrand.design_style.style_name}
@@ -1674,10 +1699,10 @@ function WorkspaceContent() {
           {(projectDetail?.project as { is_example?: boolean } | undefined)
             ?.is_example && (
             <span
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-burnt/20 border border-burnt/40 px-2.5 py-0.5 text-[11px] font-medium text-purple-200"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-crimson-600/20 border border-crimson-600/40 px-2.5 py-0.5 text-[11px] font-medium text-crimson-300"
               title="Built-in Showcase Example Project — cannot be deleted, but you can freely inspect, modify, and continue generating inside it!"
             >
-              <Sparkles className="h-3 w-3 text-burnt" />
+              <Sparkles className="h-3 w-3 text-crimson-300" />
               Showcase Example
             </span>
           )}
@@ -1688,7 +1713,7 @@ function WorkspaceContent() {
             className="hidden sm:inline-flex items-center gap-1.5 rounded-md border border-charcoal-border bg-charcoal-surface px-2.5 py-1 text-[11px] font-medium text-charcoal-text hover:bg-charcoal-hover"
             title="Open Settings, Quality Pricing & Spending Graph"
           >
-            <Settings className="h-3 w-3 text-burnt" />
+            <Settings className="h-3 w-3 text-crimson-300" />
             <span>Settings & Spend</span>
           </button>
 
@@ -1756,7 +1781,7 @@ function WorkspaceContent() {
                   onClick={() => setActiveView("generations")}
                   className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
                     activeView === "generations"
-                      ? "bg-burnt text-white"
+                      ? "bg-crimson-600 text-white"
                       : "text-charcoal-muted hover:bg-charcoal-surface hover:text-white"
                   }`}
                   title="Thread Chat & Multi-Tab Canvas"
@@ -1778,7 +1803,7 @@ function WorkspaceContent() {
                   onClick={() => setActiveView("design_md")}
                   className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
                     activeView === "design_md"
-                      ? "bg-burnt text-white"
+                      ? "bg-crimson-600 text-white"
                       : "text-charcoal-muted hover:bg-charcoal-surface hover:text-white"
                   }`}
                   title="DESIGN.md Specification & Export"
@@ -1791,7 +1816,7 @@ function WorkspaceContent() {
                   onClick={() => setActiveView("brand_kit")}
                   className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
                     activeView === "brand_kit"
-                      ? "bg-burnt text-white"
+                      ? "bg-crimson-600 text-white"
                       : "text-charcoal-muted hover:bg-charcoal-surface hover:text-white"
                   }`}
                   title="Brand Kit & Style Studio"
@@ -1804,14 +1829,14 @@ function WorkspaceContent() {
                   onClick={() => setActiveView("assets")}
                   className={`relative flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
                     activeView === "assets"
-                      ? "bg-burnt text-white"
+                      ? "bg-crimson-600 text-white"
                       : "text-charcoal-muted hover:bg-charcoal-surface hover:text-white"
                   }`}
                   title={`Project Assets Library (${projectAssets.length})`}
                 >
                   <ImageIcon className="h-4 w-4" />
                   {projectAssets.length > 0 && (
-                    <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-burnt px-1 font-mono text-[9px] font-bold text-white">
+                    <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-crimson-600 px-1 font-mono text-[9px] font-bold text-white">
                       {projectAssets.length}
                     </span>
                   )}
@@ -1890,7 +1915,7 @@ function WorkspaceContent() {
                         >
                           <span className="truncate">{p.name}</span>
                           {p.id === activeProjectId && (
-                            <Check className="h-3.5 w-3.5 text-burnt" />
+                            <Check className="h-3.5 w-3.5 text-crimson-300" />
                           )}
                         </button>
                       ))}
@@ -1902,7 +1927,7 @@ function WorkspaceContent() {
                           setProjectDropdownOpen(false);
                           router.push("/projects");
                         }}
-                        className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs font-medium text-burnt hover:bg-charcoal-hover"
+                        className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs font-medium text-crimson-300 hover:bg-charcoal-hover"
                       >
                         <FolderKanban className="h-3.5 w-3.5" />
                         <span>All projects / + New project</span>
@@ -1928,7 +1953,7 @@ function WorkspaceContent() {
                 >
                   <MessageSquare
                     className={`h-3.5 w-3.5 ${
-                      activeView === "generations" ? "text-burnt" : "opacity-75"
+                      activeView === "generations" ? "text-crimson-300" : "opacity-75"
                     }`}
                   />
                   <span>Chat & Multi-Tab Canvas</span>
@@ -1950,12 +1975,12 @@ function WorkspaceContent() {
                   <span className="flex items-center gap-2.5">
                     <FileCode2
                       className={`h-3.5 w-3.5 ${
-                        activeView === "design_md" ? "text-burnt" : "opacity-75"
+                        activeView === "design_md" ? "text-crimson-300" : "opacity-75"
                       }`}
                     />
                     <span>DESIGN.md Spec</span>
                   </span>
-                  <span className="rounded bg-burnt/20 border border-burnt/40 px-1.5 py-0.2 font-mono text-[9px] font-bold text-amber-200">
+                  <span className="rounded bg-crimson-600/20 border border-crimson-600/40 px-1.5 py-0.2 font-mono text-[9px] font-bold text-amber-200">
                     .md
                   </span>
                 </button>
@@ -1974,7 +1999,7 @@ function WorkspaceContent() {
                 >
                   <Palette
                     className={`h-3.5 w-3.5 ${
-                      activeView === "brand_kit" ? "text-burnt" : "opacity-75"
+                      activeView === "brand_kit" ? "text-crimson-300" : "opacity-75"
                     }`}
                   />
                   <span>Brand Kit & Style</span>
@@ -1995,7 +2020,7 @@ function WorkspaceContent() {
                   <span className="flex items-center gap-2.5">
                     <ImageIcon
                       className={`h-3.5 w-3.5 ${
-                        activeView === "assets" ? "text-burnt" : "opacity-75"
+                        activeView === "assets" ? "text-crimson-300" : "opacity-75"
                       }`}
                     />
                     <span>Assets Library</span>
@@ -2028,7 +2053,7 @@ function WorkspaceContent() {
                     value={threadSearch}
                     onChange={(e) => setThreadSearch(e.target.value)}
                     placeholder="Search threads..."
-                    className="w-full rounded-md border border-charcoal-border bg-charcoal-surface py-1 pl-6 pr-2 text-[11px] text-charcoal-text placeholder:text-charcoal-muted focus:border-burnt focus:outline-none"
+                    className="w-full rounded-md border border-charcoal-border bg-charcoal-surface py-1 pl-6 pr-2 text-[11px] text-charcoal-text placeholder:text-charcoal-muted focus:border-crimson-600 focus:outline-none"
                   />
                 </div>
 
@@ -2061,7 +2086,7 @@ function WorkspaceContent() {
                               if (e.key === "Escape") setEditingThreadId(null);
                             }}
                             autoFocus
-                            className="w-full rounded bg-charcoal px-1.5 py-0.5 text-xs text-white focus:outline-none border border-burnt"
+                            className="w-full rounded bg-charcoal px-1.5 py-0.5 text-xs text-white focus:outline-none border border-crimson-600"
                           />
                         ) : (
                           <>
@@ -2080,7 +2105,7 @@ function WorkspaceContent() {
                               <span
                                 className={`h-1.5 w-1.5 shrink-0 rounded-full ${
                                   isSelected
-                                    ? "bg-burnt"
+                                    ? "bg-crimson-600"
                                     : "bg-charcoal-muted/40"
                                 }`}
                               />
@@ -2160,7 +2185,7 @@ function WorkspaceContent() {
         {/* MAIN CONTENT AREA                                                 */}
         {/* ================================================================= */}
         {activeView === "design_md" && projectDetail ? (
-          <main className="flex-1 overflow-y-auto p-6 bg-[#090B11]">
+          <main className="flex-1 overflow-y-auto p-6 bg-[#0B0B0E]">
             <DesignMdView
               project={projectDetail.project}
               brand={projectDetail.brand}
@@ -2212,10 +2237,10 @@ function WorkspaceContent() {
               className="flex w-full lg:w-[27%] lg:min-w-[335px] lg:max-w-[420px] shrink-0 flex-col border-b lg:border-b-0 lg:border-r border-stone-border bg-stone-surface min-h-0 max-h-[45vh] lg:max-h-none"
             >
               {/* Chat Panel Header */}
-              <div className="flex items-center justify-between border-b border-[#252D47] px-3.5 py-2.5 bg-[#111522]">
+              <div className="flex items-center justify-between border-b border-[#2D2D30] px-3.5 py-2.5 bg-[#151518]">
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <Sparkles className="h-3.5 w-3.5 text-burnt shrink-0" />
+                    <Sparkles className="h-3.5 w-3.5 text-crimson-300 shrink-0" />
                     <h2 className="truncate text-xs font-bold text-white">
                       Design Thread Chat
                     </h2>
@@ -2226,7 +2251,7 @@ function WorkspaceContent() {
                 </div>
 
                 {/* Custom Quality Pill Switcher */}
-                <div className="flex items-center gap-0.5 rounded-lg border border-[#28304A] bg-[#0B0E17] p-0.5 shrink-0">
+                <div className="flex items-center gap-0.5 rounded-lg border border-[#303033] bg-[#0E0E11] p-0.5 shrink-0">
                   {(["low", "medium", "high"] as const).map((q) => (
                     <button
                       key={q}
@@ -2235,7 +2260,7 @@ function WorkspaceContent() {
                       onClick={() => setQuality(q)}
                       className={`rounded-md px-2 py-0.5 text-[10px] font-bold capitalize transition-colors ${
                         quality === q
-                          ? "bg-burnt text-white shadow-sm"
+                          ? "bg-crimson-600 text-white shadow-sm"
                           : "text-stone-300 hover:text-white"
                       }`}
                       title={`Default render quality: ${q}`}
@@ -2252,7 +2277,7 @@ function WorkspaceContent() {
                 className="flex-1 overflow-y-auto p-3.5 space-y-3"
               >
                 {messages.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-[#28304A] bg-[#111522] p-3.5 text-xs space-y-2.5">
+                  <div className="rounded-xl border border-dashed border-[#303033] bg-[#151518] p-3.5 text-xs space-y-2.5">
                     <div className="font-bold text-white">
                       Chat with your Design Architect
                     </div>
@@ -2263,7 +2288,7 @@ function WorkspaceContent() {
                       </span>
                       . The AI will propose{" "}
                       <span className="font-semibold text-amber-200">
-                        3–4 project-tailored questions & selectable options
+                        one question at a time, with three choices or your own answer
                       </span>{" "}
                       (or you can chat freely) and start generating as soon as
                       everything is clear!
@@ -2288,8 +2313,9 @@ function WorkspaceContent() {
                           key={starter}
                           type="button"
                           disabled={isChatLocked}
-                          onClick={() => setChatInput(starter)}
-                          className="rounded-lg border border-[#2A324D] bg-[#171C2E] px-2.5 py-1.5 text-left text-[10px] font-medium text-stone-100 hover:border-burnt hover:text-white disabled:opacity-50 transition-colors"
+                          data-testid="chat-starter"
+                          onClick={() => void sendChatMessage({ overrideText: starter })}
+                          className="rounded-lg border border-[#323235] bg-[#1C1C1F] px-2.5 py-1.5 text-left text-[10px] font-medium text-stone-100 hover:border-crimson-600 hover:text-white disabled:opacity-50 transition-colors"
                         >
                           {starter}
                         </button>
@@ -2299,7 +2325,6 @@ function WorkspaceContent() {
                 ) : (
                   messages.map((msg) => {
                     const isUser = msg.role === "user";
-                    const selectedForMsg = selectedQuickReplies[msg.id] || [];
                     return (
                       <div
                         key={msg.id}
@@ -2310,14 +2335,14 @@ function WorkspaceContent() {
                         <div
                           className={`max-w-[92%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed shadow-sm ${
                             isUser
-                              ? "bg-[#1F1A3A] border border-burnt/50 text-white rounded-br-sm"
-                              : "bg-[#151929] border border-[#28304A] text-stone-50 rounded-bl-sm"
+                              ? "bg-[#1D1D20] border border-crimson-600/50 text-white rounded-br-sm"
+                              : "bg-[#19191C] border border-[#303033] text-stone-50 rounded-bl-sm"
                           }`}
                         >
                           {/* Highlight Annotations Badge inside message */}
                           {msg.highlight_annotations &&
                             msg.highlight_annotations.length > 0 && (
-                              <div className="mb-2 rounded-lg bg-burnt/20 border border-burnt/40 px-2.5 py-1.5 text-[10px]">
+                              <div className="mb-2 rounded-lg bg-crimson-600/20 border border-crimson-600/40 px-2.5 py-1.5 text-[10px]">
                                 {msg.highlight_annotations.map((hl, idx) => (
                                   <div
                                     key={idx}
@@ -2376,7 +2401,7 @@ function WorkspaceContent() {
                                     normalizeTabKeyClient(msg.target_tab_key!)
                                   )
                                 }
-                                className="inline-flex items-center gap-1.5 rounded-md bg-burnt/10 border border-burnt/30 px-2.5 py-1 text-[11px] font-bold text-burnt hover:bg-burnt hover:text-white transition-colors"
+                                className="inline-flex items-center gap-1.5 rounded-md bg-crimson-600/10 border border-crimson-600/30 px-2.5 py-1 text-[11px] font-bold text-crimson-300 hover:bg-crimson-600 hover:text-white transition-colors"
                               >
                                 <Layout className="h-3 w-3" />
                                 <span>
@@ -2388,90 +2413,33 @@ function WorkspaceContent() {
                           )}
                         </div>
 
-                        {/* Model-Generated Multi-Select Options & Instant Generation Trigger */}
-                        {!isUser &&
-                          msg.quick_replies &&
-                          msg.quick_replies.length > 0 && (
-                            <div className="mt-2 flex flex-col gap-2 max-w-[96%]">
-                              <div className="text-[10px] font-medium text-stone-300 px-1">
-                                Click options below to select answers (or type freely in the chat box):
-                              </div>
-                              <div className="flex flex-wrap gap-1.5">
-                                {msg.quick_replies.map((qr) => {
-                                  const lowerQr = qr.toLowerCase();
-                                  const isDirectGenerate =
-                                    lowerQr.includes("all clear") ||
-                                    lowerQr.includes("start generating") ||
-                                    lowerQr === "generate now";
-                                  const isSelected = selectedForMsg.includes(qr);
-
-                                  return (
-                                    <button
-                                      key={qr}
-                                      type="button"
-                                      disabled={isChatLocked}
-                                      onClick={() => {
-                                        if (isDirectGenerate) {
-                                          const combined =
-                                            selectedForMsg.length > 0
-                                              ? `${selectedForMsg.join(" · ")} — ${qr}`
-                                              : chatInput.trim() || qr;
-                                          sendChatMessage({
-                                            overrideText: combined,
-                                            forceGenerate: true,
-                                          });
-                                          return;
-                                        }
-                                        // Toggle this option in selectedQuickReplies and sync into chatInput
-                                        const nextSelected = isSelected
-                                          ? selectedForMsg.filter((x) => x !== qr)
-                                          : [...selectedForMsg, qr];
-                                        setSelectedQuickReplies((prev) => ({
-                                          ...prev,
-                                          [msg.id]: nextSelected,
-                                        }));
-                                        setChatInput(nextSelected.join(" · "));
-                                      }}
-                                      className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-[11px] font-semibold shadow-sm transition-all text-left ${
-                                        isDirectGenerate
-                                          ? "border-emerald-400/50 bg-emerald-500/20 text-emerald-100 hover:bg-emerald-500 hover:text-white"
-                                          : isSelected
-                                          ? "border-burnt bg-burnt text-white ring-2 ring-burnt/40"
-                                          : "border-[#362F66] bg-[#1B1732] text-purple-100 hover:border-burnt hover:bg-[#262046] hover:text-white"
-                                      } disabled:opacity-40`}
-                                    >
-                                      {isSelected && (
-                                        <Check className="h-3 w-3 shrink-0 text-white" />
-                                      )}
-                                      <span>{qr}</span>
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                              {selectedForMsg.length > 0 && (
-                                <div className="flex items-center gap-2 pt-0.5">
-                                  <button
-                                    type="button"
-                                    disabled={isChatLocked}
-                                    onClick={() => {
-                                      sendChatMessage({
-                                        overrideText:
-                                          chatInput.trim() ||
-                                          selectedForMsg.join(" · "),
-                                        forceGenerate: true,
-                                      });
-                                    }}
-                                    className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#06B6D4] px-3.5 py-1.5 text-xs font-bold text-white shadow-md hover:opacity-95 disabled:opacity-40 transition-opacity"
-                                  >
-                                    <Sparkles className="h-3.5 w-3.5" />
-                                    <span>
-                                      Confirm Selected ({selectedForMsg.length}) & Start Generation →
-                                    </span>
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          )}
+                        {pendingQuestion?.id === msg.id && (
+                          msg.quick_replies.length === 3 && msg.content.split("?").length === 2 ? (
+                            <ClarificationCard
+                              key={msg.id}
+                              messageId={msg.id}
+                              question={msg.content}
+                              options={msg.quick_replies}
+                              disabled={isChatLocked}
+                              onAnswer={(answer, messageId) => sendChatMessage({
+                                overrideText: answer,
+                                answerToMessageId: messageId,
+                              })}
+                            />
+                          ) : (
+                            <button
+                              type="button"
+                              disabled={isChatLocked}
+                              onClick={() => void sendChatMessage({
+                                overrideText: "Continue clarifying my request with one unresolved question at a time and three answer choices. Keep my original request and previous answers.",
+                                answerToMessageId: msg.id,
+                              })}
+                              className="mt-2 rounded-xl border border-crimson-600/50 bg-crimson-950 px-3 py-2 text-xs text-crimson-300 disabled:opacity-50"
+                            >
+                              Continue one question at a time
+                            </button>
+                          )
+                        )}
                       </div>
                     );
                   })
@@ -2481,11 +2449,11 @@ function WorkspaceContent() {
                 {isChatLocked && (
                   <div
                     data-testid="chat-ai-working-indicator"
-                    className="rounded-2xl border-2 border-burnt/40 bg-charcoal p-3.5 text-white shadow-md space-y-2"
+                    className="rounded-2xl border-2 border-crimson-600/40 bg-charcoal p-3.5 text-white shadow-md space-y-2"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin text-burnt shrink-0" />
+                        <Loader2 className="h-4 w-4 animate-spin text-crimson-300 shrink-0" />
                         <span className="text-xs font-bold text-white">
                           {sendingChat
                             ? "GLM 5.3 Flash is thinking..."
@@ -2581,7 +2549,7 @@ function WorkspaceContent() {
                     uploadAndAttachFiles(files);
                   }
                 }}
-                className={`border-t border-stone-border bg-[#0F1320] p-3 space-y-2.5 transition-opacity ${
+                className={`border-t border-stone-border bg-[#131316] p-3 space-y-2.5 transition-opacity ${
                   isChatLocked ? "bg-stone-canvas/80" : ""
                 }`}
               >
@@ -2604,13 +2572,13 @@ function WorkspaceContent() {
 
                 {/* Queued Highlight Annotations Banner */}
                 {queuedHighlights.length > 0 && (
-                  <div className="rounded-lg border border-burnt/40 bg-burnt/10 p-2 text-[11px] space-y-1">
+                  <div className="rounded-lg border border-crimson-600/40 bg-crimson-600/10 p-2 text-[11px] space-y-1">
                     {queuedHighlights.map((hl, i) => (
                       <div
                         key={i}
                         className="flex items-center justify-between gap-2"
                       >
-                        <div className="flex items-center gap-1.5 font-semibold text-burnt min-w-0">
+                        <div className="flex items-center gap-1.5 font-semibold text-crimson-300 min-w-0">
                           <Crosshair className="h-3.5 w-3.5 shrink-0" />
                           <span className="truncate">
                             [{hl.tab_label || hl.tab_key}] &ldquo;{hl.comment}
@@ -2651,7 +2619,7 @@ function WorkspaceContent() {
                           <div className="truncate max-w-[85px] font-semibold text-stone-ink">
                             {sr.label}
                           </div>
-                          <div className="text-[9px] font-bold text-burnt capitalize">
+                          <div className="text-[9px] font-bold text-crimson-300 capitalize">
                             {sr.role.replace("_", " ")}
                           </div>
                         </div>
@@ -2705,8 +2673,8 @@ function WorkspaceContent() {
                     }
                     className={`w-full rounded-xl border p-3 text-xs text-white placeholder:text-stone-300 focus:outline-none resize-none transition-colors ${
                       isChatLocked
-                        ? "border-stone-border bg-[#0A0C14] text-stone-400 cursor-not-allowed"
-                        : "border-[#2A324D] bg-[#0B0E18] focus:border-burnt focus:bg-[#101524]"
+                        ? "border-stone-border bg-[#0C0C0F] text-stone-400 cursor-not-allowed"
+                        : "border-[#323235] bg-[#0E0E11] focus:border-crimson-600 focus:bg-[#151518]"
                     }`}
                   />
                 </div>
@@ -2718,10 +2686,10 @@ function WorkspaceContent() {
                       type="button"
                       disabled={isChatLocked}
                       onClick={() => fileInputRef.current?.click()}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-[#2D3552] bg-[#161B2C] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#20273E] hover:border-burnt/60 disabled:opacity-40 disabled:cursor-not-allowed transition-colors whitespace-nowrap shrink-0"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-[#353538] bg-[#1B1B1E] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#27272A] hover:border-crimson-600/60 disabled:opacity-40 disabled:cursor-not-allowed transition-colors whitespace-nowrap shrink-0"
                       title="Upload or paste multiple screenshots & reference images"
                     >
-                      <Paperclip className="h-3.5 w-3.5 text-burnt shrink-0" />
+                      <Paperclip className="h-3.5 w-3.5 text-crimson-300 shrink-0" />
                       <span>{uploadingFiles ? "Uploading..." : "Images"}</span>
                     </button>
 
@@ -2729,10 +2697,10 @@ function WorkspaceContent() {
                       type="button"
                       disabled={isChatLocked}
                       onClick={() => setAddAssetModalOpen(true)}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-[#2D3552] bg-[#161B2C] px-3 py-1.5 text-xs font-semibold text-stone-100 hover:bg-[#20273E] hover:text-white hover:border-burnt/60 disabled:opacity-40 disabled:cursor-not-allowed transition-colors whitespace-nowrap shrink-0"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-[#353538] bg-[#1B1B1E] px-3 py-1.5 text-xs font-semibold text-stone-100 hover:bg-[#27272A] hover:text-white hover:border-crimson-600/60 disabled:opacity-40 disabled:cursor-not-allowed transition-colors whitespace-nowrap shrink-0"
                       title="Pick from Project Assets Library"
                     >
-                      <Plus className="h-3.5 w-3.5 text-purple-300 shrink-0" />
+                      <Plus className="h-3.5 w-3.5 text-crimson-300 shrink-0" />
                       <span>Library</span>
                     </button>
                   </div>
@@ -2745,7 +2713,7 @@ function WorkspaceContent() {
                     }
                     onClick={() => sendChatMessage()}
                     data-testid="chat-send-btn"
-                    className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-burnt px-4 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-burnt-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors whitespace-nowrap shrink-0"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-crimson-600 px-4 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-crimson-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors whitespace-nowrap shrink-0"
                   >
                     {isChatLocked ? (
                       <>
@@ -2788,8 +2756,8 @@ function WorkspaceContent() {
                     }}
                     className={`group relative flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition-all shrink-0 ${
                       activeCanvasTabKey === "__design_md__"
-                        ? "bg-burnt text-white shadow-sm border border-burnt"
-                        : "bg-[#141827] text-stone-100 border border-[#28304A] hover:text-white hover:border-burnt/60 hover:bg-[#1B2135]"
+                        ? "bg-crimson-600 text-white shadow-sm border border-crimson-600"
+                        : "bg-[#18181B] text-stone-100 border border-[#303033] hover:text-white hover:border-crimson-600/60 hover:bg-[#212124]"
                     }`}
                     title="Open DESIGN.md Design System & Anti-AI-Slop Guardrails (exportable as .md)"
                   >
@@ -2799,7 +2767,7 @@ function WorkspaceContent() {
                       className={`rounded px-1.5 py-0.2 font-mono text-[9px] ${
                         activeCanvasTabKey === "__design_md__"
                           ? "bg-white/20 text-white"
-                          : "bg-burnt/20 text-amber-300 border border-burnt/30"
+                          : "bg-crimson-600/20 text-amber-300 border border-crimson-600/30"
                       }`}
                     >
                       .md
@@ -2836,12 +2804,12 @@ function WorkspaceContent() {
                             }}
                             className={`group relative flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all shrink-0 ${
                               isSelected
-                                ? "bg-burnt text-white shadow-sm border border-burnt"
-                                : "bg-[#141827] text-stone-100 border border-[#28304A] hover:text-white hover:border-burnt/60 hover:bg-[#1B2135]"
+                                ? "bg-crimson-600 text-white shadow-sm border border-crimson-600"
+                                : "bg-[#18181B] text-stone-100 border border-[#303033] hover:text-white hover:border-crimson-600/60 hover:bg-[#212124]"
                             }`}
                           >
                             {isGenerating ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin text-burnt shrink-0" />
+                              <Loader2 className="h-3.5 w-3.5 animate-spin text-crimson-300 shrink-0" />
                             ) : hasFailedRun ? (
                               <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
                             ) : isMobile ? (
@@ -2849,7 +2817,7 @@ function WorkspaceContent() {
                             ) : isTablet ? (
                               <Tablet className="h-3.5 w-3.5 shrink-0 opacity-80" />
                             ) : isAsset ? (
-                              <Sparkles className="h-3.5 w-3.5 shrink-0 text-burnt" />
+                              <Sparkles className="h-3.5 w-3.5 shrink-0 text-crimson-300" />
                             ) : (
                               <Monitor className="h-3.5 w-3.5 shrink-0 opacity-80" />
                             )}
@@ -2860,7 +2828,7 @@ function WorkspaceContent() {
                               className={`rounded px-1.5 py-0.2 font-mono text-[10px] ${
                                 isSelected
                                   ? "bg-white/20 text-white"
-                                  : "bg-[#1F2538] text-stone-100"
+                                  : "bg-[#252528] text-stone-100"
                               }`}
                               title={`${tab.items.length} visual item(s) on this tab board`}
                             >
@@ -2882,8 +2850,8 @@ function WorkspaceContent() {
                           }}
                           className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all shrink-0 ${
                             activeCanvasTabKey === "__all__"
-                              ? "bg-burnt text-white shadow-sm"
-                              : "bg-[#141827] text-stone-200 border border-[#28304A] hover:text-white hover:bg-[#1B2135]"
+                              ? "bg-crimson-600 text-white shadow-sm"
+                              : "bg-[#18181B] text-stone-200 border border-[#303033] hover:text-white hover:bg-[#212124]"
                           }`}
                         >
                           <Grid className="h-3.5 w-3.5" />
@@ -2906,7 +2874,7 @@ function WorkspaceContent() {
                             behavior: "smooth",
                           })
                         }
-                        className="rounded-lg border border-[#28304A] bg-[#141827] p-1.5 text-stone-200 hover:bg-[#1B2135] hover:text-white hover:border-burnt/60"
+                        className="rounded-lg border border-[#303033] bg-[#18181B] p-1.5 text-stone-200 hover:bg-[#212124] hover:text-white hover:border-crimson-600/60"
                         title="Scroll tabs left"
                       >
                         <ChevronLeft className="h-3.5 w-3.5" />
@@ -2919,7 +2887,7 @@ function WorkspaceContent() {
                             behavior: "smooth",
                           })
                         }
-                        className="rounded-lg border border-[#28304A] bg-[#141827] p-1.5 text-stone-200 hover:bg-[#1B2135] hover:text-white hover:border-burnt/60"
+                        className="rounded-lg border border-[#303033] bg-[#18181B] p-1.5 text-stone-200 hover:bg-[#212124] hover:text-white hover:border-crimson-600/60"
                         title="Scroll tabs right"
                       >
                         <ChevronRight className="h-3.5 w-3.5" />
@@ -2927,11 +2895,14 @@ function WorkspaceContent() {
                       <button
                         type="button"
                         data-testid="canvas-tabs-dropdown-btn"
+                        ref={tabDropdownButtonRef}
+                        aria-expanded={tabDropdownOpen}
+                        aria-controls="canvas-tabs-menu"
                         onClick={() => setTabDropdownOpen((prev) => !prev)}
                         className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors ${
                           tabDropdownOpen
-                            ? "border-burnt bg-burnt text-white"
-                            : "border-[#28304A] bg-[#141827] text-stone-100 hover:border-burnt/60 hover:bg-[#1B2135] hover:text-white"
+                            ? "border-crimson-600 bg-crimson-600 text-white"
+                            : "border-[#303033] bg-[#18181B] text-stone-100 hover:border-crimson-600/60 hover:bg-[#212124] hover:text-white"
                         }`}
                         title="Open dropdown menu of all tabs in this thread"
                       >
@@ -2951,9 +2922,10 @@ function WorkspaceContent() {
                           />
                           <div
                             data-testid="canvas-tabs-dropdown-menu"
-                            className="absolute right-0 top-full mt-2 w-72 max-h-96 overflow-y-auto rounded-xl border border-[#2E3856] bg-[#0F1320] p-1.5 shadow-2xl z-50"
+                            id="canvas-tabs-menu"
+                            className="absolute right-0 top-full mt-2 w-72 max-h-96 overflow-y-auto rounded-xl border border-[#38383B] bg-[#131316] p-1.5 shadow-2xl z-50"
                           >
-                            <div className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-stone-300 border-b border-[#1E2538] mb-1">
+                            <div className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-stone-300 border-b border-[#252528] mb-1">
                               Jump to Tab ({canvasTabs.length + 1})
                             </div>
 
@@ -2967,15 +2939,15 @@ function WorkspaceContent() {
                               }}
                               className={`w-full flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-semibold transition-colors ${
                                 activeCanvasTabKey === "__design_md__"
-                                  ? "bg-burnt text-white"
-                                  : "text-stone-100 hover:bg-[#181E31]"
+                                  ? "bg-crimson-600 text-white"
+                                  : "text-stone-100 hover:bg-[#1E1E21]"
                               }`}
                             >
                               <div className="flex items-center gap-2 min-w-0">
                                 <FileCode2 className="h-3.5 w-3.5 shrink-0 text-amber-400" />
                                 <span className="truncate">DESIGN.md</span>
                               </div>
-                              <span className="rounded bg-[#1A2135] px-1.5 py-0.5 font-mono text-[10px] text-amber-300">
+                              <span className="rounded bg-[#212124] px-1.5 py-0.5 font-mono text-[10px] text-amber-300">
                                 .md
                               </span>
                             </button>
@@ -2995,8 +2967,8 @@ function WorkspaceContent() {
                                   }}
                                   className={`w-full flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-semibold transition-colors mt-0.5 ${
                                     isSel
-                                      ? "bg-burnt text-white"
-                                      : "text-stone-100 hover:bg-[#181E31]"
+                                      ? "bg-crimson-600 text-white"
+                                      : "text-stone-100 hover:bg-[#1E1E21]"
                                   }`}
                                 >
                                   <div className="flex items-center gap-2 min-w-0">
@@ -3015,7 +2987,7 @@ function WorkspaceContent() {
                                     className={`rounded px-1.5 py-0.5 font-mono text-[10px] shrink-0 ${
                                       isSel
                                         ? "bg-white/20 text-white"
-                                        : "bg-[#1A2135] text-stone-200"
+                                        : "bg-[#212124] text-stone-200"
                                     }`}
                                   >
                                     {tab.items.length}{" "}
@@ -3034,10 +3006,10 @@ function WorkspaceContent() {
                                   setHighlightTargetOutputId(null);
                                   setTabDropdownOpen(false);
                                 }}
-                                className={`w-full flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-semibold transition-colors mt-1 border-t border-[#1E2538] pt-2 ${
+                                className={`w-full flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-semibold transition-colors mt-1 border-t border-[#252528] pt-2 ${
                                   activeCanvasTabKey === "__all__"
-                                    ? "bg-burnt text-white"
-                                    : "text-stone-200 hover:bg-[#181E31]"
+                                    ? "bg-crimson-600 text-white"
+                                    : "text-stone-200 hover:bg-[#1E1E21]"
                                 }`}
                               >
                                 <div className="flex items-center gap-2">
@@ -3062,7 +3034,7 @@ function WorkspaceContent() {
                         setDetailsRunId(latestRun.id);
                         setDetailsDrawerOpen(true);
                       }}
-                      className="rounded-lg border border-[#28304A] bg-[#141827] px-2.5 py-1.5 text-[11px] font-semibold text-stone-100 hover:bg-[#1B2135] hover:border-burnt/60"
+                      className="rounded-lg border border-[#303033] bg-[#18181B] px-2.5 py-1.5 text-[11px] font-semibold text-stone-100 hover:bg-[#212124] hover:border-crimson-600/60"
                     >
                       Run Details
                     </button>
@@ -3107,7 +3079,7 @@ function WorkspaceContent() {
                           <div
                             key={tab.tabKey}
                             onClick={() => setActiveCanvasTabKey(tab.tabKey)}
-                            className="group cursor-pointer flex flex-col rounded-2xl border border-stone-border bg-stone-surface p-3.5 shadow-card hover:border-burnt transition-all"
+                            className="group cursor-pointer flex flex-col rounded-2xl border border-stone-border bg-stone-surface p-3.5 shadow-card hover:border-crimson-600 transition-all"
                           >
                             <div className="flex items-center justify-between mb-2.5">
                               <span className="text-xs font-bold text-stone-ink">
@@ -3120,7 +3092,7 @@ function WorkspaceContent() {
                             </div>
 
                             <div
-                              className={`relative aspect-[16/10] w-full overflow-hidden rounded-xl border border-stone-border bg-[#0C0F1A] ${
+                              className={`relative aspect-[16/10] w-full overflow-hidden rounded-xl border border-stone-border bg-[#0F0F12] ${
                                 latestOut?.has_alpha ? "checkerboard-bg" : ""
                               }`}
                             >
@@ -3136,7 +3108,7 @@ function WorkspaceContent() {
                                 />
                               ) : (
                                 <div className="flex h-full w-full items-center justify-center text-xs text-stone-muted">
-                                  <Loader2 className="h-5 w-5 animate-spin text-burnt mr-2" />
+                                  <Loader2 className="h-5 w-5 animate-spin text-crimson-300 mr-2" />
                                   <span>Generating...</span>
                                 </div>
                               )}
@@ -3165,8 +3137,8 @@ function WorkspaceContent() {
                                 ? "Canvas Item"
                                 : "Canvas Items"}
                             </span>
-                            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-md bg-[#141827] border border-[#28304A] px-2.5 py-0.5 text-[10px] font-semibold text-stone-200">
-                              <Move className="h-3 w-3 text-burnt" />
+                            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-md bg-[#18181B] border border-[#303033] px-2.5 py-0.5 text-[10px] font-semibold text-stone-200">
+                              <Move className="h-3 w-3 text-crimson-300" />
                               Scroll wheel to zoom · Drag canvas background to pan · Drag cards to place anywhere
                             </span>
                             {currentTabGroup.activeRunForTab && (
@@ -3181,7 +3153,7 @@ function WorkspaceContent() {
                       {/* Whole-Tab Controls & Handoff Actions */}
                       <div className="flex flex-wrap items-center gap-2">
                         {/* Board Zoom & Auto-Arrange */}
-                        <div className="flex items-center gap-1 rounded-xl border border-[#28304A] bg-[#101420] p-1">
+                        <div className="flex items-center gap-1 rounded-xl border border-[#303033] bg-[#141417] p-1">
                           <button
                             type="button"
                             data-testid="canvas-zoom-out-btn"
@@ -3190,7 +3162,7 @@ function WorkspaceContent() {
                                 Math.max(0.35, Math.round((s - 0.15) * 100) / 100)
                               )
                             }
-                            className="rounded-lg p-1 text-stone-200 hover:bg-[#1E2538] hover:text-white"
+                            className="rounded-lg p-1 text-stone-200 hover:bg-[#252528] hover:text-white"
                             title="Zoom Board Out (or use Mouse Scroll Wheel)"
                           >
                             <ZoomOut className="h-3.5 w-3.5" />
@@ -3215,7 +3187,7 @@ function WorkspaceContent() {
                                 Math.min(2.4, Math.round((s + 0.15) * 100) / 100)
                               )
                             }
-                            className="rounded-lg p-1 text-stone-200 hover:bg-[#1E2538] hover:text-white"
+                            className="rounded-lg p-1 text-stone-200 hover:bg-[#252528] hover:text-white"
                             title="Zoom Board In (or use Mouse Scroll Wheel)"
                           >
                             <ZoomIn className="h-3.5 w-3.5" />
@@ -3225,7 +3197,7 @@ function WorkspaceContent() {
                               type="button"
                               data-testid="canvas-auto-arrange-btn"
                               onClick={resetTabCardPositions}
-                              className="ml-1 inline-flex items-center gap-1 rounded-lg bg-[#1A2033] border border-burnt/50 px-2 py-1 text-[10px] font-bold text-amber-300 shadow-sm hover:bg-burnt hover:text-white transition-colors"
+                              className="ml-1 inline-flex items-center gap-1 rounded-lg bg-[#202023] border border-crimson-600/50 px-2 py-1 text-[10px] font-bold text-amber-300 shadow-sm hover:bg-crimson-600 hover:text-white transition-colors"
                               title="Reset pan, zoom, and dragged card positions back to aligned grid"
                             >
                               <LayoutGrid className="h-3 w-3" />
@@ -3250,10 +3222,10 @@ function WorkspaceContent() {
                                 forceGenerate: true,
                               })
                             }
-                            className="inline-flex items-center gap-1.5 rounded-xl border border-[#28304A] bg-[#141827] px-3 py-1.5 text-xs font-semibold text-stone-100 hover:border-burnt hover:bg-[#1B2135] disabled:opacity-40 transition-colors"
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-[#303033] bg-[#18181B] px-3 py-1.5 text-xs font-semibold text-stone-100 hover:border-crimson-600 hover:bg-[#212124] disabled:opacity-40 transition-colors"
                             title="Generate a Mobile (9:16) variant right inside this tab next to the current design"
                           >
-                            <Smartphone className="h-3.5 w-3.5 text-burnt" />
+                            <Smartphone className="h-3.5 w-3.5 text-crimson-300" />
                             <span>+ Mobile (9:16)</span>
                           </button>
                         )}
@@ -3269,7 +3241,7 @@ function WorkspaceContent() {
                               onClick={() =>
                                 handleCopyWholeTab(currentTabGroup)
                               }
-                              className="inline-flex items-center gap-1.5 rounded-xl bg-burnt px-4 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-burnt-hover transition-colors"
+                              className="inline-flex items-center gap-1.5 rounded-xl bg-crimson-600 px-4 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-crimson-700 transition-colors"
                               title="Copy unified Coding-Agent Handoff Prompt for ALL images & transparent assets in this tab"
                             >
                               {copiedId === `tab:${currentTabGroup.tabKey}` ? (
@@ -3298,7 +3270,7 @@ function WorkspaceContent() {
                               onClick={() =>
                                 handleInspectTabHandoff(currentTabGroup)
                               }
-                              className="inline-flex items-center gap-1 rounded-xl border border-[#28304A] bg-[#141827] px-2.5 py-1.5 text-xs font-semibold text-stone-100 hover:bg-[#1B2135] hover:border-burnt/60"
+                              className="inline-flex items-center gap-1 rounded-xl border border-[#303033] bg-[#18181B] px-2.5 py-1.5 text-xs font-semibold text-stone-100 hover:bg-[#212124] hover:border-crimson-600/60"
                               title="Preview full Coding-Agent Handoff Markdown for this tab"
                             >
                               <Eye className="h-3.5 w-3.5 text-stone-300" />
@@ -3310,7 +3282,7 @@ function WorkspaceContent() {
                               onClick={() =>
                                 handleExportTabBundle(currentTabGroup)
                               }
-                              className="inline-flex items-center gap-1 rounded-xl border border-[#28304A] bg-[#141827] px-2.5 py-1.5 text-xs font-semibold text-stone-100 hover:bg-[#1B2135] hover:border-burnt/60"
+                              className="inline-flex items-center gap-1 rounded-xl border border-[#303033] bg-[#18181B] px-2.5 py-1.5 text-xs font-semibold text-stone-100 hover:bg-[#212124] hover:border-crimson-600/60"
                               title="Export portable .zip bundle for this tab"
                             >
                               <FileArchive className="h-3.5 w-3.5 text-stone-300" />
@@ -3337,15 +3309,15 @@ function WorkspaceContent() {
 
                     {/* Highlight Mode Instruction Banner */}
                     {highlightTargetOutputId && (
-                      <div className="flex items-center justify-between rounded-xl border border-burnt bg-burnt/10 px-4 py-2.5 text-xs text-stone-ink shrink-0">
+                      <div className="flex items-center justify-between rounded-xl border border-crimson-600 bg-crimson-600/10 px-4 py-2.5 text-xs text-stone-ink shrink-0">
                         <div className="flex items-center gap-2">
-                          <Crosshair className="h-4 w-4 text-burnt shrink-0" />
+                          <Crosshair className="h-4 w-4 text-crimson-300 shrink-0" />
                           <span>
                             <strong>Highlight Edit Mode Active:</strong> Click
                             and drag a rectangle directly over the highlighted
                             card below, add a comment, and send to edit that
                             region with{" "}
-                            <code className="font-mono font-bold text-burnt">
+                            <code className="font-mono font-bold text-crimson-300">
                               Sunburst 2.5 Medium
                             </code>
                             .
@@ -3357,7 +3329,7 @@ function WorkspaceContent() {
                             setHighlightTargetOutputId(null);
                             setDraftHighlightBox(null);
                           }}
-                          className="text-xs font-bold text-burnt hover:underline"
+                          className="text-xs font-bold text-crimson-300 hover:underline"
                         >
                           Exit Highlight Mode
                         </button>
@@ -3399,18 +3371,18 @@ function WorkspaceContent() {
                       }}
                       style={{
                         backgroundImage:
-                          "radial-gradient(#262E46 1.25px, transparent 1.25px)",
+                          "radial-gradient(#2E2E31 1.25px, transparent 1.25px)",
                         backgroundSize: `${Math.max(10, Math.round(20 * boardScale))}px ${Math.max(10, Math.round(20 * boardScale))}px`,
                         backgroundPosition: `${boardPan.x}px ${boardPan.y}px`,
                       }}
-                      className={`relative flex-1 min-h-[520px] overflow-hidden rounded-2xl border border-stone-border bg-[#0A0D16] p-5 shadow-inner space-y-4 ${
+                      className={`relative flex-1 min-h-[520px] overflow-hidden rounded-2xl border border-stone-border bg-[#0D0D10] p-5 shadow-inner space-y-4 ${
                         panningBoard
                           ? "cursor-grabbing select-none"
                           : "cursor-grab"
                       }`}
                     >
                       {/* Floating Bottom-Right Interactive Canvas HUD (Zoom + Pan + Reset) */}
-                      <div className="pointer-events-auto absolute bottom-3.5 right-3.5 z-50 flex items-center gap-1.5 rounded-xl border border-[#2A3350] bg-[#0F1320]/95 px-2.5 py-1.5 text-[11px] text-stone-200 shadow-lg backdrop-blur-md">
+                      <div className="pointer-events-auto absolute bottom-3.5 right-3.5 z-50 flex items-center gap-1.5 rounded-xl border border-[#333336] bg-[#131316]/95 px-2.5 py-1.5 text-[11px] text-stone-200 shadow-lg backdrop-blur-md">
                         <span className="font-mono text-[10px] text-stone-300">
                           Zoom:{" "}
                           <strong className="text-white">
@@ -3434,7 +3406,7 @@ function WorkspaceContent() {
                               setBoardScale(1);
                               setBoardPan({ x: 0, y: 0 });
                             }}
-                            className="ml-1 rounded-md bg-burnt/20 border border-burnt/40 px-1.5 py-0.5 text-[10px] font-bold text-amber-300 hover:bg-burnt hover:text-white transition-colors"
+                            className="ml-1 rounded-md bg-crimson-600/20 border border-crimson-600/40 px-1.5 py-0.5 text-[10px] font-bold text-amber-300 hover:bg-crimson-600 hover:text-white transition-colors"
                           >
                             Center
                           </button>
@@ -3444,9 +3416,9 @@ function WorkspaceContent() {
                       {/* Live Streaming Progress Bar when tab has existing items and a new run is active */}
                       {currentTabGroup.items.length > 0 &&
                         currentTabGroup.activeRunForTab && (
-                          <div className="relative z-40 flex items-center justify-between gap-3 rounded-xl border border-burnt/40 bg-charcoal px-4 py-2.5 text-xs text-white shadow-md">
+                          <div className="relative z-40 flex items-center justify-between gap-3 rounded-xl border border-crimson-600/40 bg-charcoal px-4 py-2.5 text-xs text-white shadow-md">
                             <div className="flex items-center gap-2.5 min-w-0">
-                              <Loader2 className="h-4 w-4 animate-spin text-burnt shrink-0" />
+                              <Loader2 className="h-4 w-4 animate-spin text-crimson-300 shrink-0" />
                               <span className="font-bold shrink-0">
                                 Live Stream:
                               </span>
@@ -3545,7 +3517,7 @@ function WorkspaceContent() {
                                     currentTabGroup.failedRunForTab!.id
                                   )
                                 }
-                                className="inline-flex items-center gap-2 rounded-xl bg-burnt px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-burnt-hover disabled:opacity-50 transition-colors"
+                                className="inline-flex items-center gap-2 rounded-xl bg-crimson-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-crimson-700 disabled:opacity-50 transition-colors"
                               >
                                 <RefreshCw
                                   className={`h-4 w-4 ${
@@ -3566,7 +3538,7 @@ function WorkspaceContent() {
                             className="relative flex min-h-[420px] w-full flex-col items-center justify-center overflow-hidden rounded-2xl border border-stone-border bg-stone-surface/90 p-8 text-center canvas-shimmer-overlay"
                           >
                             <div className="canvas-scanline-bar" />
-                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-burnt/15 text-burnt mb-3 shadow-sm">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-crimson-600/15 text-crimson-300 mb-3 shadow-sm">
                               <Loader2 className="h-6 w-6 animate-spin" />
                             </div>
                             <h3 className="text-sm font-bold text-stone-ink">
@@ -3630,12 +3602,12 @@ function WorkspaceContent() {
                                       ? 20
                                       : 10,
                                 }}
-                                className={`flex flex-col rounded-2xl border bg-[#121624] shadow-card transition-shadow ${
+                                className={`flex flex-col rounded-2xl border bg-[#161619] shadow-card transition-shadow ${
                                   isHighlightActiveOnCard
-                                    ? "border-burnt ring-4 ring-burnt/30"
+                                    ? "border-crimson-600 ring-4 ring-crimson-600/30"
                                     : isCardSelected
-                                    ? "border-burnt ring-2 ring-burnt/60"
-                                    : "border-[#28304A] hover:border-stone-400"
+                                    ? "border-crimson-600 ring-2 ring-crimson-600/60"
+                                    : "border-[#303033] hover:border-stone-400"
                                 }`}
                               >
                                 {/* CARD DRAG HEADER + WELL-PLACED VIEW LARGER BUTTON */}
@@ -3661,12 +3633,12 @@ function WorkspaceContent() {
                                       origY: offset.y,
                                     });
                                   }}
-                                  className="flex items-center justify-between gap-2 border-b border-[#262E45] bg-[#161B2C] px-3.5 py-2.5 rounded-t-2xl cursor-grab active:cursor-grabbing select-none"
+                                  className="flex items-center justify-between gap-2 border-b border-[#2E2E31] bg-[#1B1B1E] px-3.5 py-2.5 rounded-t-2xl cursor-grab active:cursor-grabbing select-none"
                                   title="Drag card header to move this component anywhere on the canvas board"
                                 >
                                   <div className="flex items-center gap-2 min-w-0">
                                     <GripHorizontal className="h-4 w-4 text-stone-300 shrink-0" />
-                                    <span className="rounded bg-[#0B0E17] border border-[#2A3350] px-1.5 py-0.5 font-mono text-[10px] font-bold text-white shrink-0">
+                                    <span className="rounded bg-[#0E0E11] border border-[#333336] px-1.5 py-0.5 font-mono text-[10px] font-bold text-white shrink-0">
                                       #{idx + 1}
                                     </span>
                                     <span className="truncate text-xs font-bold text-white">
@@ -3675,7 +3647,7 @@ function WorkspaceContent() {
                                     {itemOut.kind === "page" &&
                                       (itemOut.page_route ||
                                         itemOut.item_spec?.page_route) && (
-                                        <span className="rounded-md bg-burnt/20 border border-burnt/40 px-1.5 py-0.5 font-mono text-[10px] font-bold text-amber-300 shrink-0">
+                                        <span className="rounded-md bg-crimson-600/20 border border-crimson-600/40 px-1.5 py-0.5 font-mono text-[10px] font-bold text-amber-300 shrink-0">
                                           Route:{" "}
                                           {itemOut.page_route ||
                                             itemOut.item_spec?.page_route}
@@ -3688,7 +3660,7 @@ function WorkspaceContent() {
                                           Visual Anchor
                                         </span>
                                       ) : (
-                                        <span className="rounded-md bg-indigo-950/90 border border-indigo-500/50 px-1.5 py-0.5 text-[9px] font-bold text-indigo-200 shrink-0">
+                                        <span className="rounded-md bg-crimson-950/90 border border-crimson-500/50 px-1.5 py-0.5 text-[9px] font-bold text-crimson-300 shrink-0">
                                           Img2Img Shared Navbar
                                         </span>
                                       ))}
@@ -3709,14 +3681,14 @@ function WorkspaceContent() {
                                     {itemOut.item_spec?.viewport?.intent &&
                                       itemOut.item_spec.viewport.intent !==
                                         "isolated" && (
-                                        <span className="rounded bg-[#0D101B] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-stone-200 border border-[#28304A] capitalize">
+                                        <span className="rounded bg-[#101013] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-stone-200 border border-[#303033] capitalize">
                                           {itemOut.item_spec.viewport.intent}{" "}
                                           {itemOut.item_spec.viewport
                                             .css_width || ""}
                                           px
                                         </span>
                                       )}
-                                    <span className="rounded bg-[#0D101B] px-1.5 py-0.5 font-mono text-[10px] text-stone-200 border border-[#28304A]">
+                                    <span className="rounded bg-[#101013] px-1.5 py-0.5 font-mono text-[10px] text-stone-200 border border-[#303033]">
                                       {itemOut.aspect_ratio}
                                     </span>
                                     {itemOut.status === "completed" &&
@@ -3728,7 +3700,7 @@ function WorkspaceContent() {
                                             e.stopPropagation();
                                             setViewerOutput(itemOut);
                                           }}
-                                          className="inline-flex items-center gap-1 rounded-lg border border-[#2A3350] bg-[#0D101B] px-2.5 py-1 text-[11px] font-semibold text-stone-100 hover:border-burnt hover:bg-burnt hover:text-white transition-colors"
+                                          className="inline-flex items-center gap-1 rounded-lg border border-[#333336] bg-[#101013] px-2.5 py-1 text-[11px] font-semibold text-stone-100 hover:border-crimson-600 hover:bg-crimson-600 hover:text-white transition-colors"
                                           title="Open clean Fullscreen Lightbox Viewer"
                                         >
                                           <Maximize2 className="h-3 w-3" />
@@ -3773,7 +3745,7 @@ function WorkspaceContent() {
                                       onDoubleClick={() =>
                                         setViewerOutput(itemOut)
                                       }
-                                      className={`relative w-full overflow-hidden rounded-xl border border-stone-border bg-[#0C0F1A] flex items-center justify-center select-none ${
+                                      className={`relative w-full overflow-hidden rounded-xl border border-stone-border bg-[#0F0F12] flex items-center justify-center select-none ${
                                         itemOut.has_alpha
                                           ? "checkerboard-bg"
                                           : ""
@@ -3816,9 +3788,9 @@ function WorkspaceContent() {
                                             onMouseDown={(e) =>
                                               e.stopPropagation()
                                             }
-                                            className="absolute z-30 border-2 border-burnt bg-burnt/20 shadow-[0_0_0_9999px_rgba(24,23,21,0.38)] rounded-md"
+                                            className="absolute z-30 border-2 border-crimson-600 bg-crimson-600/20 shadow-[0_0_0_9999px_rgba(24,23,21,0.38)] rounded-md"
                                           >
-                                            <span className="absolute -top-6 left-0 rounded bg-burnt px-2 py-0.5 font-mono text-[10px] font-bold text-white shadow">
+                                            <span className="absolute -top-6 left-0 rounded bg-crimson-600 px-2 py-0.5 font-mono text-[10px] font-bold text-white shadow">
                                               {Math.round(
                                                 draftHighlightBox.x_pct
                                               )}
@@ -3842,14 +3814,14 @@ function WorkspaceContent() {
                                                 onClick={(e) =>
                                                   e.stopPropagation()
                                                 }
-                                                className="absolute left-0 top-full mt-2 w-80 rounded-xl border border-[#2A3350] bg-[#141827] p-3 shadow-modal text-xs space-y-2.5 z-40"
+                                                className="absolute left-0 top-full mt-2 w-80 rounded-xl border border-[#333336] bg-[#18181B] p-3 shadow-modal text-xs space-y-2.5 z-40"
                                               >
                                                 <div className="flex items-center justify-between">
                                                   <span className="font-bold text-white flex items-center gap-1.5">
-                                                    <Crosshair className="h-3.5 w-3.5 text-burnt" />
+                                                    <Crosshair className="h-3.5 w-3.5 text-crimson-300" />
                                                     Edit Highlighted Region
                                                   </span>
-                                                  <span className="rounded bg-burnt/20 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-amber-300">
+                                                  <span className="rounded bg-crimson-600/20 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-amber-300">
                                                     Sunburst 2.5 Medium
                                                   </span>
                                                 </div>
@@ -3865,7 +3837,7 @@ function WorkspaceContent() {
                                                     )
                                                   }
                                                   placeholder="Comment what to change here (e.g., Add a 'Book Demo' button with an arrow icon)..."
-                                                  className="w-full rounded-lg border border-[#2A324D] bg-[#0B0E18] p-2 text-xs text-white placeholder:text-stone-300 focus:border-burnt focus:bg-[#101524] focus:outline-none"
+                                                  className="w-full rounded-lg border border-[#323235] bg-[#0E0E11] p-2 text-xs text-white placeholder:text-stone-300 focus:border-crimson-600 focus:bg-[#151518] focus:outline-none"
                                                 />
 
                                                 <div className="flex items-center justify-end gap-1.5">
@@ -3874,7 +3846,7 @@ function WorkspaceContent() {
                                                     onClick={() =>
                                                       setDraftHighlightBox(null)
                                                     }
-                                                    className="rounded-lg px-2.5 py-1 text-[11px] font-medium text-stone-300 hover:bg-[#1E2538]"
+                                                    className="rounded-lg px-2.5 py-1 text-[11px] font-medium text-stone-300 hover:bg-[#252528]"
                                                   >
                                                     Cancel
                                                   </button>
@@ -3888,7 +3860,7 @@ function WorkspaceContent() {
                                                         false
                                                       )
                                                     }
-                                                    className="rounded-lg border border-[#28304A] bg-[#0D101B] px-2.5 py-1 text-[11px] font-semibold text-stone-100 hover:bg-[#1E2538] disabled:opacity-40"
+                                                    className="rounded-lg border border-[#303033] bg-[#101013] px-2.5 py-1 text-[11px] font-semibold text-stone-100 hover:bg-[#252528] disabled:opacity-40"
                                                   >
                                                     Queue in Chat
                                                   </button>
@@ -3904,7 +3876,7 @@ function WorkspaceContent() {
                                                         true
                                                       )
                                                     }
-                                                    className="rounded-lg bg-burnt px-3 py-1 text-[11px] font-bold text-white shadow-sm hover:bg-burnt-hover disabled:opacity-40"
+                                                    className="rounded-lg bg-crimson-600 px-3 py-1 text-[11px] font-bold text-white shadow-sm hover:bg-crimson-700 disabled:opacity-40"
                                                   >
                                                     Send & Edit Now
                                                   </button>
@@ -3915,9 +3887,9 @@ function WorkspaceContent() {
                                         )}
                                     </div>
                                   ) : isItemGenerating ? (
-                                    <div className="relative flex min-h-[280px] w-full flex-col items-center justify-center overflow-hidden rounded-xl border border-stone-border bg-[#0C0F1A] p-6 text-center canvas-shimmer-overlay">
+                                    <div className="relative flex min-h-[280px] w-full flex-col items-center justify-center overflow-hidden rounded-xl border border-stone-border bg-[#0F0F12] p-6 text-center canvas-shimmer-overlay">
                                       <div className="canvas-scanline-bar" />
-                                      <Loader2 className="h-7 w-7 animate-spin text-burnt mb-2" />
+                                      <Loader2 className="h-7 w-7 animate-spin text-crimson-300 mb-2" />
                                       <div className="text-xs font-bold text-stone-ink">
                                         Rendering &ldquo;{itemOut.title}
                                         &rdquo;...
@@ -3951,7 +3923,7 @@ function WorkspaceContent() {
 
                                   {/* CARD ACTION BAR (WELL-PLACED PER-IMAGE BUTTONS) */}
                                   {itemOut.status === "completed" && (
-                                    <div className="mt-3 pt-2.5 border-t border-[#262E45] flex flex-wrap items-center justify-between gap-2">
+                                    <div className="mt-3 pt-2.5 border-t border-[#2E2E31] flex flex-wrap items-center justify-between gap-2">
                                       <div className="flex flex-wrap items-center gap-1.5">
                                         {/* Copy Prompt for THIS Specific Image */}
                                         <button
@@ -3961,7 +3933,7 @@ function WorkspaceContent() {
                                             e.stopPropagation();
                                             handleCopySingleOutput(itemOut);
                                           }}
-                                          className="inline-flex items-center gap-1.5 rounded-xl bg-burnt px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-burnt-hover transition-colors"
+                                          className="inline-flex items-center gap-1.5 rounded-xl bg-crimson-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-crimson-700 transition-colors"
                                           title="Copy Coding-Agent Handoff Prompt for this specific image"
                                         >
                                           {copiedId === itemOut.id ? (
@@ -4002,8 +3974,8 @@ function WorkspaceContent() {
                                                 }}
                                                 className={`inline-flex items-center gap-1 rounded-xl border px-2.5 py-1.5 text-xs font-semibold transition-colors ${
                                                   isHighlightActiveOnCard
-                                                    ? "border-burnt bg-burnt text-white"
-                                                    : "border-[#28304A] bg-[#161B2C] text-stone-100 hover:border-burnt hover:bg-[#1E2538]"
+                                                    ? "border-crimson-600 bg-crimson-600 text-white"
+                                                    : "border-[#303033] bg-[#1B1B1E] text-stone-100 hover:border-crimson-600 hover:bg-[#252528]"
                                                 }`}
                                                 title="Draw a highlight box on this image to edit with Sunburst 2.5 Medium"
                                               >
@@ -4024,7 +3996,7 @@ function WorkspaceContent() {
                                                     itemOut.id
                                                   );
                                                 }}
-                                                className="inline-flex items-center gap-1 rounded-xl border border-[#28304A] bg-[#161B2C] px-2.5 py-1.5 text-xs font-semibold text-stone-100 hover:border-burnt hover:bg-[#1E2538] disabled:opacity-40 transition-colors"
+                                                className="inline-flex items-center gap-1 rounded-xl border border-[#303033] bg-[#1B1B1E] px-2.5 py-1.5 text-xs font-semibold text-stone-100 hover:border-crimson-600 hover:bg-[#252528] disabled:opacity-40 transition-colors"
                                                 title="Inspect this rendered design and extract any unextracted visual assets, 3D props, plants, logos, or photos onto transparent backgrounds in this tab"
                                               >
                                                 <Sparkles className="h-3.5 w-3.5 text-amber-400" />
@@ -4044,10 +4016,10 @@ function WorkspaceContent() {
                                               itemOut
                                             );
                                           }}
-                                          className="inline-flex items-center gap-1 rounded-lg border border-[#28304A] bg-[#161B2C] px-2.5 py-1 text-[11px] font-semibold text-stone-100 hover:border-burnt hover:bg-[#1E2538] disabled:opacity-40"
+                                          className="inline-flex items-center gap-1 rounded-lg border border-[#303033] bg-[#1B1B1E] px-2.5 py-1 text-[11px] font-semibold text-stone-100 hover:border-crimson-600 hover:bg-[#252528] disabled:opacity-40"
                                           title="Attach this image to the chat composer as a reference"
                                         >
-                                          <Layers className="h-3 w-3 text-burnt" />
+                                          <Layers className="h-3 w-3 text-crimson-300" />
                                           <span>Ref</span>
                                         </button>
 
@@ -4058,7 +4030,7 @@ function WorkspaceContent() {
                                             download={`${itemOut.title
                                               .toLowerCase()
                                               .replace(/[^a-z0-9]+/g, "-")}.png`}
-                                            className="inline-flex items-center gap-1 rounded-lg border border-[#28304A] bg-[#161B2C] px-2.5 py-1 text-[11px] font-semibold text-stone-100 hover:border-burnt hover:bg-[#1E2538]"
+                                            className="inline-flex items-center gap-1 rounded-lg border border-[#303033] bg-[#1B1B1E] px-2.5 py-1 text-[11px] font-semibold text-stone-100 hover:border-crimson-600 hover:bg-[#252528]"
                                             title="Download original PNG"
                                           >
                                             <Download className="h-3 w-3" />
@@ -4079,7 +4051,7 @@ function WorkspaceContent() {
                 ) : (
                   /* EMPTY THREAD CANVAS STATE */
                   <div className="flex h-full min-h-[420px] flex-col items-center justify-center rounded-2xl border border-dashed border-stone-border bg-stone-surface/60 p-8 text-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-burnt/10 text-burnt mb-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-crimson-600/10 text-crimson-300 mb-3">
                       <Layers className="h-6 w-6" />
                     </div>
                     <h2 className="text-base font-bold text-stone-ink">
@@ -4285,8 +4257,8 @@ function AddAssetDialogBody({
               onClick={() => setRole(rp.role)}
               className={`rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all ${
                 role === rp.role
-                  ? "border-burnt bg-burnt text-white"
-                  : "border-[#28304A] bg-[#141827] text-stone-100 hover:border-burnt"
+                  ? "border-crimson-600 bg-crimson-600 text-white"
+                  : "border-[#303033] bg-[#18181B] text-stone-100 hover:border-crimson-600"
               }`}
             >
               {rp.label}
@@ -4304,12 +4276,12 @@ function AddAssetDialogBody({
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="e.g., Place this logo in the top-left of the navbar, or use this screenshot as the current UI and add a 'Book Demo' button..."
-          className="w-full rounded-xl border border-[#2A3350] bg-[#0B0E17] p-2.5 text-xs text-white placeholder:text-stone-400 focus:border-burnt focus:outline-none"
+          className="w-full rounded-xl border border-[#333336] bg-[#0E0E11] p-2.5 text-xs text-white placeholder:text-stone-400 focus:border-crimson-600 focus:outline-none"
         />
       </div>
 
-      <div className="rounded-xl border-2 border-dashed border-[#2A3350] bg-[#0F1320] p-4 text-center">
-        <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-burnt px-4 py-2 text-xs font-bold text-white hover:bg-burnt-hover shadow-sm">
+      <div className="rounded-xl border-2 border-dashed border-[#333336] bg-[#131316] p-4 text-center">
+        <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-crimson-600 px-4 py-2 text-xs font-bold text-white hover:bg-crimson-700 shadow-sm">
           <Upload className="h-3.5 w-3.5" />
           <span>{uploading ? "Uploading..." : "Upload New Image or SVG"}</span>
           <input
@@ -4343,7 +4315,7 @@ function AddAssetDialogBody({
                 onClick={() =>
                   onSelectExisting(a, role, notes.trim() || a.placement_notes)
                 }
-                className="flex flex-col items-start rounded-xl border border-[#28304A] bg-[#141827] p-2 text-left hover:border-burnt transition-colors"
+                className="flex flex-col items-start rounded-xl border border-[#303033] bg-[#18181B] p-2 text-left hover:border-crimson-600 transition-colors"
               >
                 <img
                   src={a.thumbnail_url}

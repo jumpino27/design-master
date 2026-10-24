@@ -3,7 +3,7 @@ import "./globals.css";
 import { Providers } from "@/components/Providers";
 
 export const viewport: Viewport = {
-  themeColor: "#090A0F",
+  themeColor: "#0E0E10",
   colorScheme: "dark",
   width: "device-width",
   initialScale: 1,
@@ -39,7 +39,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    // Browser extensions can add attributes to this root before React hydrates.
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -52,7 +53,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-screen bg-[#090A0F] text-[#F8FAFC] antialiased selection:bg-[#7C3AED]/35 selection:text-white">
+      <body className="min-h-screen bg-stone-canvas text-stone-ink antialiased selection:bg-crimson-600/35 selection:text-white">
         <Providers>{children}</Providers>
       </body>
     </html>

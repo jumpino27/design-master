@@ -8,6 +8,7 @@
 [![Windows x64](https://img.shields.io/badge/Download-Windows_x64-0078D4)](https://github.com/jumpino27/design-master/releases/latest)
 [![Linux x64](https://img.shields.io/badge/Download-Linux_x64-FCC624?logo=linux&logoColor=black)](https://github.com/jumpino27/design-master/releases/latest)
 [![Build](https://github.com/jumpino27/design-master/actions/workflows/release-installers.yml/badge.svg)](https://github.com/jumpino27/design-master/actions/workflows/release-installers.yml)
+[![Sponsor Design Master](https://img.shields.io/badge/Sponsor-Design_Master-EA4AAA?logo=githubsponsors)](https://github.com/sponsors/jumpino27)
 [![MIT license](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
 
 Design Master combines a Next.js interface with a Rust/SQLite backend inside a Tauri desktop window. Projects, generated images, brand rules, and handoff prompts stay in a local storage directory. AI generation uses OpenRouter and requires your own API key.
@@ -22,6 +23,16 @@ Design Master combines a Next.js interface with a Rust/SQLite backend inside a T
 - Organize projects, threads, outputs, and assets in local folders.
 
 Includes Aetheris Chronicles and Jumpino View showcase projects. Generation quality and transparency depend on the selected model and output.
+
+## Screenshots
+
+![Jumpino View showcase workspace](docs/launch/jumpino-view-showcase.jpg)
+
+![Aetheris Chronicles HUD reference](docs/launch/aetheris-showcase.jpg)
+
+![DESIGN.md tokens and component specification](docs/launch/design-spec.jpg)
+
+[View the coding-agent handoff drawer](docs/launch/coding-agent-handoff.jpg).
 
 ## Install
 
@@ -88,6 +99,6 @@ The integration tests use a deterministic provider adapter and do not make paid 
 
 ## Support and contributions
 
-[Report an issue or propose a feature](https://github.com/jumpino27/design-master/issues). Funding links will appear here after the owner's payment profile is verified.
+[Report an issue or propose a feature](https://github.com/jumpino27/design-master/issues). [Sponsor Design Master](https://github.com/sponsors/jumpino27) to support maintenance, installer testing, and export improvements.
 
 Licensed under [MIT](LICENSE).
